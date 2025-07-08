@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>T-Shirt Designs Gallery</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Archivo:wght@900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+  <style>
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: #f4f6fb;
+      margin: 0;
+      padding: 0;
+    }
+    .atlas-pro {
+      font-family: 'Archivo', 'Montserrat', sans-serif;
+      font-size: 3rem;
+      font-weight: 900;
+      letter-spacing: 0.2em;
+      text-align: center;
+      margin-top: 32px;
+      color: #1a1a1a;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    }
+    h1 {
+      text-align: center;
+      margin-top: 15px;
+      color: #000000;
+      text-transform: uppercase;
+      font-size: 1.6rem;
+    }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 32px;
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    .design-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: box-shadow 0.2s;
+    }
+    .design-card:hover {
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    }
+    .design-img {
+      width: 100%;
+      aspect-ratio: 2/3;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      object-fit: cover;
+      background: #f0f0f0;
+      display: block;
+    }
+    .stars {
+      display: flex;
+      flex-direction: row-reverse;
+      justify-content: center;
+      margin-top: 0px;
+      margin-bottom: 20px;
+    }
+    .star {
+      font-size: 2rem;
+      color: #e0e0e0;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .star.selected,
+    .star:hover,
+    .star:hover ~ .star {
+      color: #ffc107;
+    }
+    .modal {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      overflow: auto;
+      box-sizing: border-box;
+      background: none;
+    }
+    .modal[style*="display: flex"] {
+      display: flex !important;
+    }
+    .modal-backdrop {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(30, 30, 40, 0.75);
+      z-index: 1;
+    }
+    .modal-content {
+      position: relative;
+      z-index: 2;
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.18);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      max-width: 98vw;
+      max-height: 98vh;
+      box-sizing: border-box;
+      margin: 0;
+    }
+    .modal-content img {
+      max-width: 90vw;
+      max-height: 80vh;
+      border-radius: 12px;
+      box-shadow: 0 2px 16px rgba(0,0,0,0.12);
+      object-fit: contain;
+      background: #f0f0f0;
+      margin-bottom: 18px;
+      box-sizing: border-box;
+    }
+    .modal-close {
+      position: absolute;
+      top: 10px;
+      right: 18px;
+      font-size: 2.2rem;
+      color: #333;
+      cursor: pointer;
+      font-weight: bold;
+      z-index: 3;
+      transition: color 0.2s;
+    }
+    .modal-close:hover {
+      color: #e53935;
+    }
+    .modal-arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1rem;
+      color: #333;
+      background: rgba(255,255,255,0.7);
+      border-radius: 50%;
+      width: 25px;
+      height: 25px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 4;
+      user-select: none;
+      transition: background 0.2s;
+    }
+    .modal-arrow:hover {
+      background: #ffc107;
+      color: #fff;
+    }
+    .modal-arrow-left {
+      left: 10px;
+    }
+    .modal-arrow-right {
+      right: 10px;
+    }
+    #modalRating {
+      margin-top: 10px;
+      display: flex;
+      justify-content: center;
+    }
+    .modal-bottom-row {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      margin-top: 0.5em;
+      gap: 1em;
+    }
+    @media (max-width: 900px) {
+      .gallery {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    @media (max-width: 600px) {
+      .gallery {
+        grid-template-columns: 1fr;
+      }
+      .design-img {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 2/3;
+      }
+      .modal-content {
+        max-width: 100vw;
+        width: 100vw;
+        padding: 0;
+        margin: 0;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-content img {
+        max-width: 100vw;
+        width: 100vw;
+        max-height: 60vh;
+        margin: 0 auto 12px auto;
+        display: block;
+      }
+      .modal-arrow {
+        font-size: 1.2rem;
+        width: 22px;
+        height: 22px;
+        position: relative;
+        margin: 0 0.2em;
+        background: #fff;
+        color: #333;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+        top: 6px;
+      }
+      .modal-arrow-left {
+        left: -8vw;
+      }
+      .modal-arrow-right {
+        right: -8vw;
+      }
+      .atlas-logo img {
+        width: 90vw;
+        max-width: 90vw;
+      }
+      .modal-bottom-row {
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        width: 100vw;
+        margin: 0;
+        gap: 0.2em;
+        min-height: 32px;
+      }
+      #modalRating {
+        margin: 0;
+        display: flex;
+        align-items: center;
+      }
+    }
+    .atlas-logo {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 32px;
+      margin-bottom: 0;
+    }
+    .atlas-logo img {
+      width: 380px;
+      max-width: 90%;
+      height: auto;
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <div class="atlas-logo"><img src="logo.png" alt="Atlas Pro Logo" /></div>
+  <h1>Designs Gallery</h1>
+  <div class="gallery" id="gallery">
+    <!-- Images will be loaded here by JavaScript -->
+  </div>
+  <div id="modal" class="modal" style="display:none;">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content">
+      <span class="modal-close" id="modalClose">&times;</span>
+      <img id="modalImg" src="" alt="Design" />
+      <div class="modal-bottom-row">
+        <span class="modal-arrow modal-arrow-left" id="modalArrowLeft"><i class="fa-solid fa-arrow-left"></i></span>
+        <div id="modalRating"></div>
+        <span class="modal-arrow modal-arrow-right" id="modalArrowRight"><i class="fa-solid fa-arrow-right"></i></span>
+      </div>
+    </div>
+  </div>
+  <script>
+    async function fetchImages() {
+      const res = await fetch('/api/designs');
+      if (!res.ok) return [];
+      return res.json();
+    }
+
+    function createStarRating(designName) {
+      const container = document.createElement('div');
+      container.className = 'stars';
+      // Get saved rating from localStorage
+      const savedRating = Number(localStorage.getItem('rating_' + designName)) || 0;
+      for (let i = 5; i >= 1; i--) {
+        const star = document.createElement('span');
+        star.className = 'star';
+        star.innerHTML = '★';
+        star.dataset.value = i;
+        star.onclick = async function() {
+          // Save rating to localStorage
+          localStorage.setItem('rating_' + designName, i);
+          await fetch('/api/rate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ design: designName, rating: i })
+          });
+          highlightStars(container, i);
+        };
+        star.onmouseover = function() { highlightStars(container, i); };
+        star.onmouseout = function() { highlightStars(container, Number(localStorage.getItem('rating_' + designName)) || 0); };
+        container.appendChild(star);
+      }
+      // Highlight saved rating on load
+      highlightStars(container, savedRating);
+      return container;
+    }
+
+    function highlightStars(container, value) {
+      const stars = container.querySelectorAll('.star');
+      stars.forEach(star => {
+        star.classList.toggle('selected', star.dataset.value <= value);
+      });
+    }
+
+    let modalImages = [];
+    let modalIndex = 0;
+
+    async function renderGallery() {
+      const gallery = document.getElementById('gallery');
+      gallery.innerHTML = '';
+      const images = await fetchImages();
+      modalImages = images;
+      images.forEach((img, idx) => {
+        const card = document.createElement('div');
+        card.className = 'design-card';
+        const image = document.createElement('img');
+        image.src = `/designs/${img}`;
+        image.alt = img;
+        image.className = 'design-img';
+        // Add click to open modal
+        image.onclick = function() {
+          openModal(idx);
+        };
+        card.appendChild(image);
+        card.appendChild(createStarRating(img));
+        gallery.appendChild(card);
+      });
+    }
+
+    // Modal logic
+    function openModal(index) {
+      modalIndex = index;
+      updateModal();
+      const modal = document.getElementById('modal');
+      modal.style.display = 'flex';
+    }
+    function closeModal() {
+      const modal = document.getElementById('modal');
+      modal.style.display = 'none';
+      document.getElementById('modalImg').src = '';
+      document.getElementById('modalRating').innerHTML = '';
+    }
+    function updateModal() {
+      const img = modalImages[modalIndex];
+      const modalImg = document.getElementById('modalImg');
+      modalImg.src = `/designs/${img}`;
+      // Add rating UI to modal
+      const modalRating = document.getElementById('modalRating');
+      modalRating.innerHTML = '';
+      modalRating.appendChild(createStarRating(img));
+    }
+    document.getElementById('modalClose').onclick = closeModal;
+    document.querySelector('#modal .modal-backdrop').onclick = closeModal;
+    document.getElementById('modalArrowLeft').onclick = function(e) {
+      e.stopPropagation();
+      modalIndex = (modalIndex - 1 + modalImages.length) % modalImages.length;
+      updateModal();
+    };
+    document.getElementById('modalArrowRight').onclick = function(e) {
+      e.stopPropagation();
+      modalIndex = (modalIndex + 1) % modalImages.length;
+      updateModal();
+    };
+    document.addEventListener('keydown', function(e) {
+      const modal = document.getElementById('modal');
+      if (modal.style.display === 'flex') {
+        if (e.key === 'Escape') closeModal();
+        if (e.key === 'ArrowLeft') {
+          modalIndex = (modalIndex - 1 + modalImages.length) % modalImages.length;
+          updateModal();
+        }
+        if (e.key === 'ArrowRight') {
+          modalIndex = (modalIndex + 1) % modalImages.length;
+          updateModal();
+        }
+      }
+    });
+    // Touch/swipe support for mobile
+    let touchStartX = null;
+    document.getElementById('modal').addEventListener('touchstart', function(e) {
+      if (e.touches.length === 1) {
+        touchStartX = e.touches[0].clientX;
+      }
+    });
+    document.getElementById('modal').addEventListener('touchend', function(e) {
+      if (touchStartX !== null && e.changedTouches.length === 1) {
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        if (Math.abs(dx) > 50) {
+          if (dx > 0) {
+            // Swipe right
+            modalIndex = (modalIndex - 1 + modalImages.length) % modalImages.length;
+            updateModal();
+          } else {
+            // Swipe left
+            modalIndex = (modalIndex + 1) % modalImages.length;
+            updateModal();
+          }
+        }
+      }
+      touchStartX = null;
+    });
+    renderGallery();
+  </script>
+</body>
+</html> 
