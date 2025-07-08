@@ -27,26 +27,25 @@ export default async function handler(req, res) {
       });
       const rows = getRes.data.values || [];
       // Header: [timestamp, design, rating, visitor]
-      let deleteRequests = [];
+      let deleteIndices = [];
       for (let i = 1; i < rows.length; i++) {
         if (String(rows[i][1]) === String(design) && String(rows[i][3]) === String(visitor)) {
-          // Prepare a delete request for this row
-          deleteRequests.push({
-            deleteDimension: {
-              range: {
-                sheetId: sheetId,
-                dimension: 'ROWS',
-                startIndex: i,
-                endIndex: i + 1,
-              },
-            },
-          });
+          deleteIndices.push(i);
         }
       }
-      // 2. Delete all previous rows for this visitor/design
-      if (deleteRequests.length > 0) {
-        // Delete from bottom to top to avoid shifting indices
-        deleteRequests.reverse();
+      // 2. Delete all previous rows for this visitor/design (from bottom to top)
+      if (deleteIndices.length > 0) {
+        deleteIndices.sort((a, b) => b - a); // Descending order
+        const deleteRequests = deleteIndices.map(idx => ({
+          deleteDimension: {
+            range: {
+              sheetId: sheetId,
+              dimension: 'ROWS',
+              startIndex: idx,
+              endIndex: idx + 1,
+            },
+          },
+        }));
         await sheets.spreadsheets.batchUpdate({
           spreadsheetId,
           requestBody: {
