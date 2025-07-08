@@ -335,7 +335,7 @@
         const card = document.createElement('div');
         card.className = 'design-card';
         const image = document.createElement('img');
-        image.src = `atlasprodesigns/designs/${img}`;
+        image.src = `/atlasprodesigns/designs/${img}`;
         image.alt = img;
         image.className = 'design-img';
         // Add click to open modal
@@ -364,7 +364,7 @@
     function updateModal() {
       const img = modalImages[modalIndex];
       const modalImg = document.getElementById('modalImg');
-      modalImg.src = `atlasprodesigns/designs/${img}`;
+      modalImg.src = `/atlasprodesigns/designs/${img}`;
       // Add rating UI to modal
       const modalRating = document.getElementById('modalRating');
       modalRating.innerHTML = '';
