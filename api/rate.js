@@ -22,36 +22,45 @@ export default async function handler(req, res) {
       });
       const rows = getRes.data.values || [];
       // Header: [timestamp, design, rating, visitor]
-      let foundRow = -1;
+      let deleteRequests = [];
       for (let i = 1; i < rows.length; i++) {
         if (String(rows[i][1]) === String(design) && String(rows[i][3]) === String(visitor)) {
-          foundRow = i + 1; // 1-based index, +1 for header
+          // Prepare a delete request for this row
+          deleteRequests.push({
+            deleteDimension: {
+              range: {
+                sheetId: 0, // Usually 0 for the first sheet; adjust if needed
+                dimension: 'ROWS',
+                startIndex: i,
+                endIndex: i + 1,
+              },
+            },
+          });
         }
       }
-      if (foundRow !== -1) {
-        // Update the last matching row (A{foundRow}:D{foundRow})
-        await sheets.spreadsheets.values.update({
+      // 2. Delete all previous rows for this visitor/design
+      if (deleteRequests.length > 0) {
+        // Delete from bottom to top to avoid shifting indices
+        deleteRequests.reverse();
+        await sheets.spreadsheets.batchUpdate({
           spreadsheetId,
-          range: `${sheetName}!A${foundRow}:D${foundRow}`,
-          valueInputOption: 'USER_ENTERED',
           requestBody: {
-            values: [[new Date().toISOString(), design, rating, visitor]],
-          },
-        });
-      } else {
-        // Append new row
-        await sheets.spreadsheets.values.append({
-          spreadsheetId,
-          range: `${sheetName}!A:D`,
-          valueInputOption: 'USER_ENTERED',
-          requestBody: {
-            values: [[new Date().toISOString(), design, rating, visitor]],
+            requests: deleteRequests,
           },
         });
       }
+      // 3. Append the new row
+      await sheets.spreadsheets.values.append({
+        spreadsheetId,
+        range: `${sheetName}!A:D`,
+        valueInputOption: 'USER_ENTERED',
+        requestBody: {
+          values: [[new Date().toISOString(), design, rating, visitor]],
+        },
+      });
 
       res.setHeader('Access-Control-Allow-Origin', '*');
-      res.status(200).json({ success: true, message: foundRow !== -1 ? 'Rating updated!' : 'Rating added!' });
+      res.status(200).json({ success: true, message: 'Rating updated!' });
     } catch (error) {
       console.error('Google Sheets error:', error);
       res.setHeader('Access-Control-Allow-Origin', '*');
