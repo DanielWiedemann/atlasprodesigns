@@ -10,7 +10,8 @@
   <style>
     body {
       font-family: 'Montserrat', sans-serif;
-      background: #f4f6fb;
+      background: #f4f6fb url('background.webp') repeat;
+      background-size: auto;
       margin: 0;
       padding: 0;
     }
@@ -282,7 +283,7 @@
       </div>
     </div>
   </div>
-  <div style="width:100%;background:#bbb;color:#fff;text-align:center;padding:4px 0;font-size:0.95em;font-family:monospace;position:relative;bottom:0;">v1.0.5</div>
+  <div id="version-badge" style="position:fixed;bottom:10px;right:10px;z-index:999;background:#e0e0e0;color:#fff;padding:2px 8px;border-radius:6px;font-size:0.85em;font-family:monospace;box-shadow:0 1px 4px rgba(0,0,0,0.04);opacity:0.7;">v1.0.6</div>
   <script>
     async function fetchImages() {
       const res = await fetch('designs/designs.json');
