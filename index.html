@@ -289,6 +289,15 @@
 
     const SHEETDB_API_URL = 'https://sheetdb.io/api/v1/7n68zmoy9a34v';
 
+    function getVisitorId() {
+      let id = localStorage.getItem('visitor_id');
+      if (!id) {
+        id = Math.random().toString(36).substr(2, 9) + Date.now();
+        localStorage.setItem('visitor_id', id);
+      }
+      return id;
+    }
+
     function createStarRating(designName, avgRating = null) {
       const container = document.createElement('div');
       container.className = 'stars';
@@ -309,7 +318,8 @@
               data: [{
                 timestamp: new Date().toISOString(),
                 design: designName,
-                rating: i
+                rating: i,
+                visitor: getVisitorId()
               }]
             })
           });
