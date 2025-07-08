@@ -22,20 +22,17 @@ export default async function handler(req, res) {
       });
       const rows = getRes.data.values || [];
       // Header: [timestamp, design, rating, visitor]
-      let found = false;
-      let rowNum = -1;
+      let foundRow = -1;
       for (let i = 1; i < rows.length; i++) {
         if (String(rows[i][1]) === String(design) && String(rows[i][3]) === String(visitor)) {
-          found = true;
-          rowNum = i + 1; // 1-based index, +1 for header
-          break;
+          foundRow = i + 1; // 1-based index, +1 for header
         }
       }
-      if (found) {
-        // Update this row in place (A{rowNum}:D{rowNum})
+      if (foundRow !== -1) {
+        // Update the last matching row (A{foundRow}:D{foundRow})
         await sheets.spreadsheets.values.update({
           spreadsheetId,
-          range: `${sheetName}!A${rowNum}:D${rowNum}`,
+          range: `${sheetName}!A${foundRow}:D${foundRow}`,
           valueInputOption: 'USER_ENTERED',
           requestBody: {
             values: [[new Date().toISOString(), design, rating, visitor]],
@@ -54,7 +51,7 @@ export default async function handler(req, res) {
       }
 
       res.setHeader('Access-Control-Allow-Origin', '*');
-      res.status(200).json({ success: true, message: found ? 'Rating updated!' : 'Rating added!' });
+      res.status(200).json({ success: true, message: foundRow !== -1 ? 'Rating updated!' : 'Rating added!' });
     } catch (error) {
       console.error('Google Sheets error:', error);
       res.setHeader('Access-Control-Allow-Origin', '*');
