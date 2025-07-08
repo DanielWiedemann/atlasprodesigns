@@ -21,7 +21,6 @@ export default async function handler(req, res) {
         range: `${sheetName}!A:D`,
       });
       const rows = getRes.data.values || [];
-      // Header: [timestamp, design, rating, visitor]
       let header = rows[0] || ['timestamp', 'design', 'rating', 'visitor'];
       let data = rows.slice(1);
 
@@ -37,15 +36,23 @@ export default async function handler(req, res) {
         data.push([new Date().toISOString(), design, rating, visitor]);
       }
 
-      // 2. Overwrite all data except header
-      await sheets.spreadsheets.values.update({
+      // 2. Clear all data except header
+      await sheets.spreadsheets.values.clear({
         spreadsheetId,
-        range: `${sheetName}!A2:D${data.length + 1}`,
-        valueInputOption: 'USER_ENTERED',
-        requestBody: {
-          values: data,
-        },
+        range: `${sheetName}!A2:D`,
       });
+
+      // 3. Write the new data
+      if (data.length > 0) {
+        await sheets.spreadsheets.values.update({
+          spreadsheetId,
+          range: `${sheetName}!A2:D${data.length + 1}`,
+          valueInputOption: 'USER_ENTERED',
+          requestBody: {
+            values: data,
+          },
+        });
+      }
 
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.status(200).json({ success: true, message: updated ? 'Rating updated!' : 'Rating added!' });
