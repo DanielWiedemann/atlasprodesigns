@@ -283,9 +283,8 @@
   </div>
   <script>
     async function fetchImages() {
-      const res = await fetch('/api/designs');
-      if (!res.ok) return [];
-      return res.json();
+      const res = await fetch('designs/designs.json');
+      return res.ok ? res.json() : [];
     }
 
     function createStarRating(designName) {
@@ -301,11 +300,11 @@
         star.onclick = async function() {
           // Save rating to localStorage
           localStorage.setItem('rating_' + designName, i);
-          await fetch('/api/rate', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ design: designName, rating: i })
-          });
+          // await fetch('/api/rate', {
+          //   method: 'POST',
+          //   headers: { 'Content-Type': 'application/json' },
+          //   body: JSON.stringify({ design: designName, rating: i })
+          // });
           highlightStars(container, i);
         };
         star.onmouseover = function() { highlightStars(container, i); };

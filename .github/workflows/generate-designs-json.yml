@@ -1,0 +1,31 @@
+name: Generate designs.json
+
+on:
+  push:
+    paths:
+      - 'designs/**'
+      - '.github/workflows/generate-designs-json.yml'
+      - 'generate-designs-json.js'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Generate designs.json
+        run: npm run generate:designs
+
+      - name: Commit and push if changed
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add designs/designs.json
+          git diff --cached --quiet || git commit -m "Auto-update designs.json"
+          git push 
