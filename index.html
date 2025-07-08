@@ -287,7 +287,9 @@
       return res.ok ? res.json() : [];
     }
 
-    function createStarRating(designName) {
+    const RATINGS_API_URL = 'https://script.google.com/macros/s/AKfycbwWXRxpWXiPr-6LQaHCVvYxxUpMbP3Ro0-voIcBPM5vHAq2hGXwxTBSO3u_I-HVAJ60aw/exec';
+
+    function createStarRating(designName, avgRating = null) {
       const container = document.createElement('div');
       container.className = 'stars';
       // Get saved rating from localStorage
@@ -300,11 +302,11 @@
         star.onclick = async function() {
           // Save rating to localStorage
           localStorage.setItem('rating_' + designName, i);
-          // await fetch('/api/rate', {
-          //   method: 'POST',
-          //   headers: { 'Content-Type': 'application/json' },
-          //   body: JSON.stringify({ design: designName, rating: i })
-          // });
+          await fetch(RATINGS_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ design: designName, rating: i })
+          });
           highlightStars(container, i);
         };
         star.onmouseover = function() { highlightStars(container, i); };
@@ -313,6 +315,15 @@
       }
       // Highlight saved rating on load
       highlightStars(container, savedRating);
+      // Optionally show average rating
+      if (avgRating !== null) {
+        const avg = document.createElement('span');
+        avg.style.marginLeft = '0.5em';
+        avg.style.fontSize = '1.1em';
+        avg.style.color = '#888';
+        avg.textContent = `(Avg: ${avgRating.toFixed(2)})`;
+        container.appendChild(avg);
+      }
       return container;
     }
 
@@ -331,19 +342,31 @@
       gallery.innerHTML = '';
       const images = await fetchImages();
       modalImages = images;
+      // Fetch ratings from Google Sheets
+      let ratings = {};
+      try {
+        const res = await fetch(RATINGS_API_URL);
+        if (res.ok) ratings = await res.json();
+      } catch (e) { ratings = {}; }
       images.forEach((img, idx) => {
         const card = document.createElement('div');
         card.className = 'design-card';
         const image = document.createElement('img');
-        image.src = `/atlasprodesigns/designs/${img}`;
+        image.src = `designs/${img}`;
         image.alt = img;
         image.className = 'design-img';
         // Add click to open modal
         image.onclick = function() {
           openModal(idx);
         };
+        // Calculate average rating if available
+        let avgRating = null;
+        if (ratings[img] && ratings[img].length > 0) {
+          const arr = ratings[img].map(Number).filter(x => !isNaN(x));
+          if (arr.length > 0) avgRating = arr.reduce((a, b) => a + b, 0) / arr.length;
+        }
         card.appendChild(image);
-        card.appendChild(createStarRating(img));
+        card.appendChild(createStarRating(img, avgRating));
         gallery.appendChild(card);
       });
     }
@@ -364,7 +387,7 @@
     function updateModal() {
       const img = modalImages[modalIndex];
       const modalImg = document.getElementById('modalImg');
-      modalImg.src = `/atlasprodesigns/designs/${img}`;
+      modalImg.src = `designs/${img}`;
       // Add rating UI to modal
       const modalRating = document.getElementById('modalRating');
       modalRating.innerHTML = '';
