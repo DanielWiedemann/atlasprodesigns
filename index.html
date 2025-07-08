@@ -287,7 +287,7 @@
       return res.ok ? res.json() : [];
     }
 
-    const RATINGS_API_URL = 'https://script.google.com/macros/s/AKfycbwWXRxpWXiPr-6LQaHCVvYxxUpMbP3Ro0-voIcBPM5vHAq2hGXwxTBSO3u_I-HVAJ60aw/exec';
+    const SHEETDB_API_URL = 'https://sheetdb.io/api/v1/7n68zmoy9a34v';
 
     function createStarRating(designName, avgRating = null) {
       const container = document.createElement('div');
@@ -302,10 +302,16 @@
         star.onclick = async function() {
           // Save rating to localStorage
           localStorage.setItem('rating_' + designName, i);
-          await fetch(RATINGS_API_URL, {
+          await fetch(SHEETDB_API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ design: designName, rating: i })
+            body: JSON.stringify({
+              data: [{
+                timestamp: new Date().toISOString(),
+                design: designName,
+                rating: i
+              }]
+            })
           });
           highlightStars(container, i);
         };
@@ -342,12 +348,12 @@
       gallery.innerHTML = '';
       const images = await fetchImages();
       modalImages = images;
-      // Fetch ratings from Google Sheets
-      let ratings = {};
+      // Fetch ratings from SheetDB
+      let allRatings = [];
       try {
-        const res = await fetch(RATINGS_API_URL);
-        if (res.ok) ratings = await res.json();
-      } catch (e) { ratings = {}; }
+        const res = await fetch(SHEETDB_API_URL);
+        if (res.ok) allRatings = await res.json();
+      } catch (e) { allRatings = []; }
       images.forEach((img, idx) => {
         const card = document.createElement('div');
         card.className = 'design-card';
@@ -361,9 +367,10 @@
         };
         // Calculate average rating if available
         let avgRating = null;
-        if (ratings[img] && ratings[img].length > 0) {
-          const arr = ratings[img].map(Number).filter(x => !isNaN(x));
-          if (arr.length > 0) avgRating = arr.reduce((a, b) => a + b, 0) / arr.length;
+        const ratingsForImg = allRatings.filter(r => r.design === img && !isNaN(Number(r.rating)));
+        if (ratingsForImg.length > 0) {
+          const arr = ratingsForImg.map(r => Number(r.rating));
+          avgRating = arr.reduce((a, b) => a + b, 0) / arr.length;
         }
         card.appendChild(image);
         card.appendChild(createStarRating(img, avgRating));
