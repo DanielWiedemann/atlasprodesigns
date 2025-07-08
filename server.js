@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 const DESIGNS_DIR = path.join(__dirname, 'designs');
 const RATINGS_FILE = path.join(__dirname, 'ratings.json');
@@ -54,9 +54,10 @@ app.use((req, res, next) => {
 
 // List images in /designs
 app.get('/api/designs', (req, res) => {
-  fs.readdir(DESIGNS_DIR, (err, files) => {
+  fs.readdir(path.join(__dirname, 'designs'), (err, files) => {
     if (err) return res.status(500).json([]);
-    const images = files.filter(f => /\.(jpg|jpeg|png|gif|webp)$/i.test(f));
+    // Only return image files
+    const images = files.filter(f => /\.(png|jpg|jpeg|gif)$/i.test(f));
     res.json(images);
   });
 });
