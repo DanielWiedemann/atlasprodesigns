@@ -23,23 +23,25 @@ export default async function handler(req, res) {
       const rows = getRes.data.values || [];
       // Header: [timestamp, design, rating, visitor]
       let found = false;
+      let rowNum = -1;
       for (let i = 1; i < rows.length; i++) {
         if (String(rows[i][1]) === String(design) && String(rows[i][3]) === String(visitor)) {
-          // Update this row in place (A2:D2 for row 2, etc.)
-          const rowNum = i + 1; // 1-based index, +1 for header
-          await sheets.spreadsheets.values.update({
-            spreadsheetId,
-            range: `${sheetName}!A${rowNum}:D${rowNum}`,
-            valueInputOption: 'USER_ENTERED',
-            requestBody: {
-              values: [[new Date().toISOString(), design, rating, visitor]],
-            },
-          });
           found = true;
+          rowNum = i + 1; // 1-based index, +1 for header
           break;
         }
       }
-      if (!found) {
+      if (found) {
+        // Update this row in place (A{rowNum}:D{rowNum})
+        await sheets.spreadsheets.values.update({
+          spreadsheetId,
+          range: `${sheetName}!A${rowNum}:D${rowNum}`,
+          valueInputOption: 'USER_ENTERED',
+          requestBody: {
+            values: [[new Date().toISOString(), design, rating, visitor]],
+          },
+        });
+      } else {
         // Append new row
         await sheets.spreadsheets.values.append({
           spreadsheetId,
