@@ -25,7 +25,7 @@ export default async function handler(req, res) {
       let found = false;
       for (let i = 1; i < rows.length; i++) {
         if (String(rows[i][1]) === String(design) && String(rows[i][3]) === String(visitor)) {
-          // Update this row in place
+          // Update this row in place (A2:D2 for row 2, etc.)
           const rowNum = i + 1; // 1-based index, +1 for header
           await sheets.spreadsheets.values.update({
             spreadsheetId,
