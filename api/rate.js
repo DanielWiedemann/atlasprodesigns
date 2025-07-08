@@ -15,6 +15,11 @@ export default async function handler(req, res) {
       });
       const sheets = google.sheets({ version: 'v4', auth });
 
+      // Get the sheetId for the given sheetName
+      const metaRes = await sheets.spreadsheets.get({ spreadsheetId });
+      const sheet = metaRes.data.sheets.find(s => s.properties.title === sheetName);
+      const sheetId = sheet ? sheet.properties.sheetId : 0;
+
       // 1. Read all rows
       const getRes = await sheets.spreadsheets.values.get({
         spreadsheetId,
@@ -29,7 +34,7 @@ export default async function handler(req, res) {
           deleteRequests.push({
             deleteDimension: {
               range: {
-                sheetId: 0, // Usually 0 for the first sheet; adjust if needed
+                sheetId: sheetId,
                 dimension: 'ROWS',
                 startIndex: i,
                 endIndex: i + 1,
