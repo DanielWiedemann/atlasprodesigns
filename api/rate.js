@@ -24,38 +24,37 @@ export default async function handler(req, res) {
       let header = rows[0] || ['timestamp', 'design', 'rating', 'visitor'];
       let data = rows.slice(1);
 
-      let updated = false;
-      for (let i = 0; i < data.length; i++) {
-        if (String(data[i][1]) === String(design) && String(data[i][3]) === String(visitor)) {
-          data[i] = [new Date().toISOString(), design, rating, visitor];
-          updated = true;
-          break;
-        }
+      // 2. Build a map of unique visitor/design pairs (latest rating wins)
+      const key = (d, v) => `${d}|||${v}`;
+      const map = new Map();
+      for (const row of data) {
+        map.set(key(row[1], row[3]), row);
       }
-      if (!updated) {
-        data.push([new Date().toISOString(), design, rating, visitor]);
-      }
+      // 3. Update or add the current rating
+      map.set(key(design, visitor), [new Date().toISOString(), design, rating, visitor]);
+      // 4. Build the new data array
+      const newData = Array.from(map.values());
 
-      // 2. Clear all data except header
+      // 5. Clear all data except header
       await sheets.spreadsheets.values.clear({
         spreadsheetId,
         range: `${sheetName}!A2:D`,
       });
 
-      // 3. Write the new data
-      if (data.length > 0) {
+      // 6. Write the new data
+      if (newData.length > 0) {
         await sheets.spreadsheets.values.update({
           spreadsheetId,
-          range: `${sheetName}!A2:D${data.length + 1}`,
+          range: `${sheetName}!A2:D${newData.length + 1}`,
           valueInputOption: 'USER_ENTERED',
           requestBody: {
-            values: data,
+            values: newData,
           },
         });
       }
 
       res.setHeader('Access-Control-Allow-Origin', '*');
-      res.status(200).json({ success: true, message: updated ? 'Rating updated!' : 'Rating added!' });
+      res.status(200).json({ success: true, message: 'Rating updated!' });
     } catch (error) {
       console.error('Google Sheets error:', error);
       res.setHeader('Access-Control-Allow-Origin', '*');
