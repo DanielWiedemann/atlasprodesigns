@@ -331,15 +331,7 @@
       }
       // Highlight saved rating on load
       highlightStars(container, savedRating);
-      // Optionally show average rating
-      if (avgRating !== null) {
-        const avg = document.createElement('span');
-        avg.style.marginLeft = '0.5em';
-        avg.style.fontSize = '1.1em';
-        avg.style.color = '#888';
-        avg.textContent = `(Avg: ${avgRating.toFixed(2)})`;
-        container.appendChild(avg);
-      }
+      // (Removed average rating display)
       return container;
     }
 
