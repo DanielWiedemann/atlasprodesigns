@@ -283,7 +283,7 @@
   </div>
   <script>
     async function fetchImages() {
-      const res = await fetch('designs/designs.json');
+      const res = await fetch('atlasprodesigns/designs/designs.json');
       return res.ok ? res.json() : [];
     }
 
@@ -364,7 +364,7 @@
     function updateModal() {
       const img = modalImages[modalIndex];
       const modalImg = document.getElementById('modalImg');
-      modalImg.src = `/designs/${img}`;
+      modalImg.src = `atlasprodesigns/designs/${img}`;
       // Add rating UI to modal
       const modalRating = document.getElementById('modalRating');
       modalRating.innerHTML = '';
