@@ -15,11 +15,6 @@ export default async function handler(req, res) {
       });
       const sheets = google.sheets({ version: 'v4', auth });
 
-      // Get the sheetId for the given sheetName
-      const metaRes = await sheets.spreadsheets.get({ spreadsheetId });
-      const sheet = metaRes.data.sheets.find(s => s.properties.title === sheetName);
-      const sheetId = sheet ? sheet.properties.sheetId : 0;
-
       // 1. Read all rows
       const getRes = await sheets.spreadsheets.values.get({
         spreadsheetId,
@@ -27,44 +22,33 @@ export default async function handler(req, res) {
       });
       const rows = getRes.data.values || [];
       // Header: [timestamp, design, rating, visitor]
-      let deleteIndices = [];
-      for (let i = 1; i < rows.length; i++) {
-        if (String(rows[i][1]) === String(design) && String(rows[i][3]) === String(visitor)) {
-          deleteIndices.push(i);
+      let header = rows[0] || ['timestamp', 'design', 'rating', 'visitor'];
+      let data = rows.slice(1);
+
+      let updated = false;
+      for (let i = 0; i < data.length; i++) {
+        if (String(data[i][1]) === String(design) && String(data[i][3]) === String(visitor)) {
+          data[i] = [new Date().toISOString(), design, rating, visitor];
+          updated = true;
+          break;
         }
       }
-      // 2. Delete all previous rows for this visitor/design (from bottom to top)
-      if (deleteIndices.length > 0) {
-        deleteIndices.sort((a, b) => b - a); // Descending order
-        const deleteRequests = deleteIndices.map(idx => ({
-          deleteDimension: {
-            range: {
-              sheetId: sheetId,
-              dimension: 'ROWS',
-              startIndex: idx,
-              endIndex: idx + 1,
-            },
-          },
-        }));
-        await sheets.spreadsheets.batchUpdate({
-          spreadsheetId,
-          requestBody: {
-            requests: deleteRequests,
-          },
-        });
+      if (!updated) {
+        data.push([new Date().toISOString(), design, rating, visitor]);
       }
-      // 3. Append the new row
-      await sheets.spreadsheets.values.append({
+
+      // 2. Overwrite all data except header
+      await sheets.spreadsheets.values.update({
         spreadsheetId,
-        range: `${sheetName}!A:D`,
+        range: `${sheetName}!A2:D${data.length + 1}`,
         valueInputOption: 'USER_ENTERED',
         requestBody: {
-          values: [[new Date().toISOString(), design, rating, visitor]],
+          values: data,
         },
       });
 
       res.setHeader('Access-Control-Allow-Origin', '*');
-      res.status(200).json({ success: true, message: 'Rating updated!' });
+      res.status(200).json({ success: true, message: updated ? 'Rating updated!' : 'Rating added!' });
     } catch (error) {
       console.error('Google Sheets error:', error);
       res.setHeader('Access-Control-Allow-Origin', '*');
