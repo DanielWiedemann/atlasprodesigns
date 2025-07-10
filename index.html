@@ -290,7 +290,7 @@
       return res.ok ? res.json() : [];
     }
 
-    const SHEETDB_API_URL = 'https://sheetdb.io/api/v1/7n68zmoy9a34v';
+    const GOOGLE_SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbwYIgOt9La2S_KOmrEGEFsq2WtlgGVV4rxPCb_YhG0eju_s-zygdJwtW74X-cXOI9IA/exec';
 
     function getVisitorId() {
       let id = localStorage.getItem('visitor_id');
@@ -314,7 +314,7 @@
         star.onclick = async function() {
           // Save rating to localStorage
           localStorage.setItem('rating_' + designName, i);
-          await fetch(SHEETDB_API_URL, {
+          await fetch(GOOGLE_SHEET_API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -356,7 +356,7 @@
       // Fetch ratings from SheetDB
       let allRatings = [];
       try {
-        const res = await fetch(SHEETDB_API_URL);
+        const res = await fetch(GOOGLE_SHEET_API_URL);
         if (res.ok) allRatings = await res.json();
       } catch (e) { allRatings = []; }
       images.forEach((img, idx) => {
