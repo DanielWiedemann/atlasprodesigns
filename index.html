@@ -360,7 +360,8 @@
         const res = await fetch(SHEET_GET_URL);
         if (res.ok) allRatings = await res.json();
       } catch (e) { allRatings = []; }
-      images.forEach((img, idx) => {
+      // Show newest images first
+      images.slice().reverse().forEach((img, idx) => {
         const card = document.createElement('div');
         card.className = 'design-card';
         const image = document.createElement('img');
@@ -369,7 +370,7 @@
         image.className = 'design-img';
         // Add click to open modal
         image.onclick = function() {
-          openModal(idx);
+          openModal(images.length - 1 - idx); // Adjust index for reversed order
         };
         // Calculate average rating if available
         let avgRating = null;
