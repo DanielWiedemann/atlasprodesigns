@@ -283,7 +283,7 @@
       </div>
     </div>
   </div>
-  <div id="version-badge" style="position:fixed;bottom:10px;right:10px;z-index:999;background:#e0e0e0;color:#fff;padding:2px 8px;border-radius:6px;font-size:0.85em;font-family:monospace;box-shadow:0 1px 4px rgba(0,0,0,0.04);opacity:0.7;">v1.0.7</div>
+  <div id="version-badge" style="position:fixed;bottom:10px;right:10px;z-index:999;background:#e0e0e0;color:#fff;padding:2px 8px;border-radius:6px;font-size:0.85em;font-family:monospace;box-shadow:0 1px 4px rgba(0,0,0,0.04);opacity:0.7;">v1.0.8</div>
   <script>
     async function fetchImages() {
       const res = await fetch('designs/designs.json');
@@ -316,14 +316,12 @@
           localStorage.setItem('rating_' + designName, i);
           await fetch(GOOGLE_SHEET_API_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              data: [{
-                timestamp: new Date().toISOString(),
-                design: designName,
-                rating: i,
-                visitor: getVisitorId()
-              }]
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+              timestamp: new Date().toISOString(),
+              design: designName,
+              rating: i,
+              visitor: getVisitorId()
             })
           });
           highlightStars(container, i);
