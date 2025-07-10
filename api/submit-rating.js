@@ -33,7 +33,7 @@ export default async function handler(req, res) {
   }
 
   // Forward the data to your Google Apps Script endpoint
-  const scriptUrl = 'https://script.google.com/macros/s/AKfycbwYIgOt9La2S_KOmrEGEFsq2WtlgGVV4rxPCb_YhG0eju_s-zygdJwtW74X-cXOI9IA/exec';
+  const scriptUrl = 'https://script.google.com/macros/s/AKfycbwiVQ02J3wLudTJxM6Z_vNHUGKWwEwxXAVi4JvKIhbDIzs9Zfv_9sF7VhIsPT7PE9tQBQ/exec';
   const params = new URLSearchParams({ design, rating, visitor });
 
   try {
