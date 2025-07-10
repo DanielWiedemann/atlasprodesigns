@@ -283,14 +283,17 @@
       </div>
     </div>
   </div>
-  <div id="version-badge" style="position:fixed;bottom:10px;right:10px;z-index:999;background:#e0e0e0;color:#fff;padding:2px 8px;border-radius:6px;font-size:0.85em;font-family:monospace;box-shadow:0 1px 4px rgba(0,0,0,0.04);opacity:0.7;">v1.0.9</div>
+  <div id="version-badge" style="position:fixed;bottom:10px;right:10px;z-index:999;background:#e0e0e0;color:#fff;padding:2px 8px;border-radius:6px;font-size:0.85em;font-family:monospace;box-shadow:0 1px 4px rgba(0,0,0,0.04);opacity:0.7;">v1.0.10</div>
   <script>
     async function fetchImages() {
       const res = await fetch('designs/designs.json');
       return res.ok ? res.json() : [];
     }
 
+    // Use the Vercel proxy for POST (submitting ratings)
     const GOOGLE_SHEET_API_URL = 'https://atlasprodesigns.vercel.app/api/submit-rating';
+    // Use the Apps Script endpoint for GET (fetching ratings/images)
+    const SHEET_GET_URL = 'https://script.google.com/macros/s/AKfycbwYIgOt9La2S_KOmrEGEFsq2WtlgGVV4rxPCb_YhG0eju_s-zygdJwtW74X-cXOI9IA/exec';
 
     function getVisitorId() {
       let id = localStorage.getItem('visitor_id');
@@ -351,10 +354,10 @@
       gallery.innerHTML = '';
       const images = await fetchImages();
       modalImages = images;
-      // Fetch ratings from SheetDB
+      // Fetch ratings from Apps Script endpoint (GET)
       let allRatings = [];
       try {
-        const res = await fetch(GOOGLE_SHEET_API_URL);
+        const res = await fetch(SHEET_GET_URL);
         if (res.ok) allRatings = await res.json();
       } catch (e) { allRatings = []; }
       images.forEach((img, idx) => {
