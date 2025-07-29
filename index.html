@@ -52,7 +52,6 @@
       box-shadow: 0 4px 24px rgba(0,0,0,0.07);
       overflow: hidden;
       transition: transform 0.3s ease, box-shadow 0.3s ease;
-      cursor: pointer;
       position: relative;
     }
     .design-card:hover {
@@ -130,35 +129,6 @@
       border-radius: 8px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
     }
-    .modal {
-      display: none;
-      position: fixed;
-      z-index: 1000;
-      left: 0;
-      top: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(0,0,0,0.9);
-    }
-    .modal-content {
-      margin: auto;
-      display: block;
-      max-width: 90%;
-      max-height: 90%;
-      object-fit: contain;
-    }
-    .close {
-      position: absolute;
-      top: 15px;
-      right: 35px;
-      color: #f1f1f1;
-      font-size: 40px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    .close:hover {
-      color: #bbb;
-    }
     .loading {
       text-align: center;
       padding: 40px;
@@ -187,6 +157,45 @@
     .admin-link:hover {
       background: #555;
     }
+    
+    /* Mobile responsive styles */
+    @media (max-width: 768px) {
+      .gallery-container {
+        padding: 0 10px;
+        width: 95%;
+        margin: 20px auto;
+      }
+      .gallery-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        margin-top: 20px;
+      }
+      .design-image {
+        height: 400px;
+      }
+      .design-info {
+        padding: 15px;
+      }
+      .design-name {
+        font-size: 1rem;
+      }
+      .star {
+        font-size: 1.3rem;
+      }
+      .admin-link {
+        top: 15px;
+        right: 15px;
+        padding: 6px 10px;
+        font-size: 0.7rem;
+      }
+      h1 {
+        font-size: 1.4rem;
+        margin-top: 10px;
+      }
+      .atlas-logo img {
+        width: 300px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -203,12 +212,6 @@
         <i class="fas fa-spinner fa-spin"></i> Loading designs...
       </div>
     </div>
-  </div>
-
-  <!-- Modal for enlarged view -->
-  <div id="imageModal" class="modal">
-    <span class="close">&times;</span>
-    <img class="modal-content" id="modalImage">
   </div>
 
   <script>
@@ -388,11 +391,6 @@
         card.appendChild(overlay);
       }
       
-      // Click to open modal
-      card.addEventListener('click', () => {
-        openModal(design.image_url, design.name);
-      });
-      
       return card;
     }
 
@@ -417,48 +415,17 @@
       });
     }
 
-    // Modal functionality
-    function openModal(imageSrc, imageAlt) {
-      const modal = document.getElementById('imageModal');
-      const modalImg = document.getElementById('modalImage');
-      modal.style.display = 'block';
-      modalImg.src = imageSrc;
-      modalImg.alt = imageAlt;
-    }
-
-    function closeModal() {
-      const modal = document.getElementById('imageModal');
-      modal.style.display = 'none';
-    }
-
-    function updateModal() {
-      const modal = document.getElementById('imageModal');
-      modal.addEventListener('click', function(e) {
-        if (e.target === modal) {
-          closeModal();
-        }
-      });
-    }
-
     // Initialize
     async function init() {
       await loadSupabaseConfig();
       if (SUPABASE_URL && SUPABASE_ANON_KEY) {
         await initializeSupabase();
         await renderGallery();
-        updateModal();
       }
     }
-
-    // Close modal with X button
-    document.addEventListener('DOMContentLoaded', () => {
-      const closeBtn = document.querySelector('.close');
-      if (closeBtn) {
-        closeBtn.addEventListener('click', closeModal);
-      }
-    });
 
     init();
   </script>
 </body>
+</html>
 </html>
