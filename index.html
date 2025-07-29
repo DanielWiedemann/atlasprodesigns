@@ -234,6 +234,21 @@
   <h1>Designs Gallery</h1>
   
   <div class="gallery-container">
+    <div style="text-align: center; margin-bottom: 20px;">
+      <button id="refresh-btn" style="
+        background: #3498db;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: bold;
+        transition: background 0.2s;
+      " onmouseover="this.style.background='#2980b9'" onmouseout="this.style.background='#3498db'">
+        <i class="fas fa-sync-alt"></i> Refresh Designs
+      </button>
+    </div>
     <div id="gallery" class="gallery-grid">
       <div class="loading">
         <i class="fas fa-spinner fa-spin"></i> Loading designs...
@@ -423,6 +438,26 @@
       image.alt = design.name;
       image.loading = 'lazy';
       
+      // Add error handling for broken images
+      image.onerror = function() {
+        this.style.display = 'none';
+        const errorMsg = document.createElement('div');
+        errorMsg.style.cssText = `
+          width: 100%;
+          height: 400px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #f8f9fa;
+          color: #666;
+          font-size: 0.9rem;
+          text-align: center;
+          padding: 20px;
+        `;
+        errorMsg.innerHTML = '<i class="fas fa-exclamation-triangle"></i><br>Image not available';
+        this.parentNode.insertBefore(errorMsg, this);
+      };
+      
       // Add watermark
       const watermark = document.createElement('div');
       watermark.className = 'watermark';
@@ -479,6 +514,57 @@
       });
     }
 
+    // Add periodic refresh to detect deleted designs
+    let refreshInterval;
+    
+    function startPeriodicRefresh() {
+      // Refresh every 30 seconds to detect deleted designs
+      refreshInterval = setInterval(async () => {
+        try {
+          const currentDesigns = await loadDesigns();
+          const currentDesignIds = currentDesigns.map(d => d.id);
+          const existingCards = document.querySelectorAll('.design-card');
+          const gallery = document.getElementById('gallery');
+          
+          // If no designs exist and we have cards, clear the gallery
+          if (currentDesigns.length === 0 && existingCards.length > 0) {
+            gallery.innerHTML = `
+              <div class="no-designs">
+                <i class="fas fa-images"></i><br>
+                No designs found. Please upload some designs first.
+              </div>
+            `;
+            return;
+          }
+          
+          // Remove cards for designs that no longer exist
+          existingCards.forEach(card => {
+            const designId = card.dataset.designId;
+            if (!currentDesignIds.includes(designId)) {
+              card.remove();
+            }
+          });
+          
+          // Add new designs if any
+          const existingDesignIds = Array.from(existingCards).map(card => card.dataset.designId);
+          currentDesigns.forEach(design => {
+            if (!existingDesignIds.includes(design.id)) {
+              const card = createDesignCard(design);
+              gallery.insertBefore(card, gallery.firstChild);
+            }
+          });
+        } catch (error) {
+          console.error('Error during periodic refresh:', error);
+        }
+      }, 30000); // 30 seconds
+    }
+
+    function stopPeriodicRefresh() {
+      if (refreshInterval) {
+        clearInterval(refreshInterval);
+      }
+    }
+
     // Initialize
     async function init() {
       await loadSupabaseConfig();
@@ -486,6 +572,24 @@
         await initializeSupabase();
         await renderGallery();
         setupImageProtection();
+        startPeriodicRefresh(); // Start periodic refresh
+        
+        // Add refresh button functionality
+        document.getElementById('refresh-btn').addEventListener('click', async () => {
+          const btn = document.getElementById('refresh-btn');
+          const originalText = btn.innerHTML;
+          btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
+          btn.disabled = true;
+          
+          try {
+            await renderGallery();
+          } catch (error) {
+            console.error('Error refreshing gallery:', error);
+          } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+          }
+        });
       }
     }
 
