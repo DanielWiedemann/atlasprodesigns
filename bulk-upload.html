@@ -427,15 +427,30 @@
       const parts = nameWithoutExt.split('_');
       if (parts.length >= 3) {
         // Join parts from index 2 onwards (skip date and time)
-        return parts.slice(2).join(' ');
+        let designName = parts.slice(2).join(' ');
+        
+        // Cut off at the word "simple" (case insensitive)
+        const simpleIndex = designName.toLowerCase().indexOf(' simple');
+        if (simpleIndex !== -1) {
+          designName = designName.substring(0, simpleIndex);
+        }
+        
+        return designName.trim();
       }
       
       // Fallback: remove date/time pattern and clean up
-      return nameWithoutExt
+      let fallbackName = nameWithoutExt
         .replace(/^\d{8}_\d{4}_/, '') // Remove date_time_ pattern
-        .replace(/_simple_compose_\w+$/, '') // Remove _simple_compose_xxx
-        .replace(/_/g, ' ') // Replace remaining underscores with spaces
+        .replace(/_/g, ' ') // Replace underscores with spaces
         .trim();
+      
+      // Cut off at the word "simple" (case insensitive)
+      const simpleIndex = fallbackName.toLowerCase().indexOf(' simple');
+      if (simpleIndex !== -1) {
+        fallbackName = fallbackName.substring(0, simpleIndex);
+      }
+      
+      return fallbackName.trim();
     }
 
     function formatFileSize(bytes) {
