@@ -609,8 +609,38 @@
     }
 
     async function initializeSupabase() {
-      const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
-      supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      try {
+        const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+        supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        // Check if storage bucket exists
+        await checkAndCreateStorageBucket();
+        
+        console.log('Supabase initialized successfully');
+      } catch (error) {
+        console.error('Error initializing Supabase:', error);
+      }
+    }
+
+    async function checkAndCreateStorageBucket() {
+      try {
+        console.log('Checking if storage bucket exists...');
+        
+        // Try to list files in the bucket to see if it exists
+        const { data: files, error } = await supabase.storage
+          .from('designs')
+          .list('', { limit: 1 });
+        
+        if (error) {
+          console.log('Storage bucket does not exist or is not accessible:', error);
+          console.log('You may need to create the storage bucket manually in Supabase dashboard');
+          console.log('Or run the SQL command: INSERT INTO storage.buckets (id, name, public) VALUES (\'designs\', \'designs\', true);');
+        } else {
+          console.log('Storage bucket exists and is accessible');
+        }
+      } catch (error) {
+        console.error('Error checking storage bucket:', error);
+      }
     }
 
     function updateStats() {
@@ -750,21 +780,59 @@
         deleteButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
         
         try {
+          console.log('Starting deletion process for design:', design);
+          console.log('Filename to delete from storage:', design.filename);
+          
           // First, delete the file from Supabase storage
-          const { error: storageError } = await supabase.storage
+          console.log('Attempting to delete from Supabase storage...');
+          const { data: storageData, error: storageError } = await supabase.storage
             .from('designs')
             .remove([design.filename]);
           
+          console.log('Storage deletion result:', { storageData, storageError });
+          
           if (storageError) {
             console.error('Error deleting file from storage:', storageError);
+            // Try alternative method - list files and delete by exact path
+            try {
+              console.log('Trying alternative deletion method...');
+              const { data: listData, error: listError } = await supabase.storage
+                .from('designs')
+                .list('', { limit: 1000 });
+              
+              if (!listError && listData) {
+                const fileToDelete = listData.find(file => file.name === design.filename);
+                if (fileToDelete) {
+                  console.log('Found file in storage, attempting deletion...');
+                  const { error: altDeleteError } = await supabase.storage
+                    .from('designs')
+                    .remove([fileToDelete.name]);
+                  
+                  if (altDeleteError) {
+                    console.error('Alternative deletion also failed:', altDeleteError);
+                  } else {
+                    console.log('Alternative deletion successful');
+                  }
+                } else {
+                  console.log('File not found in storage listing, may already be deleted');
+                }
+              }
+            } catch (altError) {
+              console.error('Alternative deletion method failed:', altError);
+            }
             // Continue with database deletion even if storage deletion fails
+          } else {
+            console.log('Successfully deleted file from storage');
           }
           
           // Then delete the design record from the database
-          const { error } = await supabase
+          console.log('Attempting to delete from database...');
+          const { data: dbData, error } = await supabase
             .from('designs')
             .delete()
             .eq('id', design.id);
+          
+          console.log('Database deletion result:', { dbData, error });
           
           if (error) {
             console.error('Error deleting design:', error);
@@ -773,6 +841,8 @@
             deleteButton.innerHTML = '<i class="fas fa-trash"></i> Delete Design';
             return;
           }
+          
+          console.log('Successfully deleted design from database');
           
           // Remove the card from the UI
           card.remove();
