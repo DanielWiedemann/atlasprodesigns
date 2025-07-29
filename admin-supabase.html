@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Atlas Pro - Admin Panel</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Archivo:wght@900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+  <link rel="icon" type="image/x-icon" href="favicon.ico" />
+  <style>
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: #f4f6fb url('background.webp') repeat;
+      background-size: 450px;
+      margin: 0;
+      padding: 0;
+    }
+    .atlas-logo {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: 32px;
+      margin-bottom: 0;
+    }
+    .atlas-logo img {
+      width: 380px;
+      max-width: 90%;
+      height: auto;
+      display: block;
+    }
+    h1 {
+      text-align: center;
+      margin-top: 15px;
+      color: #000000;
+      text-transform: uppercase;
+      font-size: 1.6rem;
+    }
+    .admin-container {
+      max-width: 1400px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    .admin-header {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+      padding: 24px;
+      margin-bottom: 32px;
+      text-align: center;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+    .stat-card {
+      background: #f8f9fa;
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+    }
+    .stat-number {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #3498db;
+    }
+    .stat-label {
+      color: #666;
+      font-size: 0.9rem;
+      margin-top: 8px;
+    }
+    .filters {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .filter-button {
+      background: #fff;
+      border: 2px solid #e0e0e0;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: bold;
+    }
+    .filter-button.active {
+      background: #3498db;
+      color: white;
+      border-color: #3498db;
+    }
+    .filter-button:hover {
+      border-color: #3498db;
+    }
+    .designs-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 24px;
+      margin-top: 32px;
+    }
+    .design-admin-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+      padding: 16px;
+      transition: box-shadow 0.2s;
+    }
+    .design-admin-card:hover {
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    }
+    .design-admin-card.sold {
+      border: 2px solid #e74c3c;
+      background: #fdf2f2;
+    }
+    .design-thumbnail {
+      width: 100%;
+      aspect-ratio: 2/3;
+      border-radius: 10px;
+      margin-bottom: 16px;
+      object-fit: contain;
+      background: #f0f0f0;
+      display: block;
+    }
+    .design-name {
+      font-size: 1rem;
+      color: #333;
+      margin-bottom: 12px;
+      word-break: break-word;
+      line-height: 1.4;
+      font-weight: bold;
+    }
+    .design-stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .stat-item {
+      background: #f8f9fa;
+      padding: 8px;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 0.8rem;
+    }
+    .stat-value {
+      font-weight: bold;
+      color: #3498db;
+    }
+    .toggle-container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 12px;
+    }
+    .toggle-label {
+      font-size: 0.9rem;
+      color: #666;
+    }
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 50px;
+      height: 24px;
+    }
+    .toggle-switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 24px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    input:checked + .slider {
+      background-color: #e74c3c;
+    }
+    input:checked + .slider:before {
+      transform: translateX(26px);
+    }
+    .status-badge {
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+    .status-available {
+      background: #d4edda;
+      color: #155724;
+    }
+    .status-sold {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    .save-button {
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 20px;
+    }
+    .save-button:hover {
+      background: #2980b9;
+    }
+    .save-button:disabled {
+      background: #bdc3c7;
+      cursor: not-allowed;
+    }
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+      color: #666;
+    }
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 10px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .back-link {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: #666;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: bold;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    @media (max-width: 768px) {
+      .designs-grid {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 16px;
+      }
+      .admin-container {
+        padding: 0 16px;
+      }
+      .filters {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <a href="gallery-supabase.html" class="back-link">
+    <i class="fas fa-arrow-left"></i> Back to Gallery
+  </a>
+  
+  <div class="atlas-logo"><img src="logo.png" alt="Atlas Pro Logo" /></div>
+  <h1>Admin Panel</h1>
+  
+  <div class="admin-container">
+    <div class="admin-header">
+      <h2>Design Management</h2>
+      <p>Manage design availability and view ratings. Changes are saved automatically.</p>
+      
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-number" id="totalDesigns">0</div>
+          <div class="stat-label">Total Designs</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="availableDesigns">0</div>
+          <div class="stat-label">Available</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="soldDesigns">0</div>
+          <div class="stat-label">Sold</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="totalRatings">0</div>
+          <div class="stat-label">Total Ratings</div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="filters">
+      <button class="filter-button active" data-filter="all">All Designs</button>
+      <button class="filter-button" data-filter="available">Available</button>
+      <button class="filter-button" data-filter="sold">Sold</button>
+      <button class="filter-button" data-filter="rated">With Ratings</button>
+    </div>
+    
+    <div class="loading" id="loading">
+      <div class="loading-spinner"></div>
+      Loading designs...
+    </div>
+    
+    <div class="designs-grid" id="designsGrid">
+      <!-- Designs will be loaded here -->
+    </div>
+  </div>
+
+  <script>
+    // Supabase configuration - will be loaded from API
+    let SUPABASE_URL = null;
+    let SUPABASE_ANON_KEY = null;
+    
+    let designs = [];
+    let supabase;
+    let currentFilter = 'all';
+
+    async function loadSupabaseConfig() {
+      try {
+        const response = await fetch('/api/supabase-config');
+        if (response.ok) {
+          const config = await response.json();
+          SUPABASE_URL = config.supabaseUrl;
+          SUPABASE_ANON_KEY = config.supabaseAnonKey;
+        } else {
+          throw new Error('Failed to load Supabase configuration');
+        }
+      } catch (error) {
+        console.error('Error loading Supabase config:', error);
+        // Fallback to placeholder values for development
+        SUPABASE_URL = 'YOUR_SUPABASE_URL';
+        SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+      }
+    }
+
+    async function initializeSupabase() {
+      const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+      supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+
+    function updateStats() {
+      const total = designs.length;
+      const sold = designs.filter(d => d.is_sold).length;
+      const available = total - sold;
+      const totalRatings = designs.reduce((sum, d) => sum + (d.total_ratings || 0), 0);
+      
+      document.getElementById('totalDesigns').textContent = total;
+      document.getElementById('availableDesigns').textContent = available;
+      document.getElementById('soldDesigns').textContent = sold;
+      document.getElementById('totalRatings').textContent = totalRatings;
+    }
+
+    function filterDesigns() {
+      const grid = document.getElementById('designsGrid');
+      grid.innerHTML = '';
+      
+      let filteredDesigns = designs;
+      
+      switch (currentFilter) {
+        case 'available':
+          filteredDesigns = designs.filter(d => !d.is_sold);
+          break;
+        case 'sold':
+          filteredDesigns = designs.filter(d => d.is_sold);
+          break;
+        case 'rated':
+          filteredDesigns = designs.filter(d => d.total_ratings > 0);
+          break;
+      }
+      
+      filteredDesigns.forEach(design => {
+        const card = createDesignCard(design);
+        grid.appendChild(card);
+      });
+    }
+
+    function createDesignCard(design) {
+      const card = document.createElement('div');
+      card.className = 'design-admin-card';
+      if (design.is_sold) {
+        card.classList.add('sold');
+      }
+      
+      const thumbnail = document.createElement('img');
+      thumbnail.src = design.image_url;
+      thumbnail.alt = design.name;
+      thumbnail.className = 'design-thumbnail';
+      
+      const name = document.createElement('div');
+      name.className = 'design-name';
+      name.textContent = design.name;
+      
+      const stats = document.createElement('div');
+      stats.className = 'design-stats';
+      stats.innerHTML = `
+        <div class="stat-item">
+          <div class="stat-value">${design.total_ratings || 0}</div>
+          <div>Ratings</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value">${design.average_rating ? design.average_rating.toFixed(1) : 'N/A'}</div>
+          <div>Avg Rating</div>
+        </div>
+      `;
+      
+      const toggleContainer = document.createElement('div');
+      toggleContainer.className = 'toggle-container';
+      
+      const toggleLabel = document.createElement('span');
+      toggleLabel.className = 'toggle-label';
+      toggleLabel.textContent = design.is_sold ? 'Sold' : 'Available';
+      if (design.is_sold) {
+        toggleLabel.style.color = '#e74c3c';
+      }
+      
+      const toggleSwitch = document.createElement('label');
+      toggleSwitch.className = 'toggle-switch';
+      
+      const checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = design.is_sold;
+      checkbox.onchange = async function() {
+        try {
+          const { error } = await supabase
+            .from('designs')
+            .update({ is_sold: checkbox.checked })
+            .eq('id', design.id);
+          
+          if (error) {
+            console.error('Error updating design:', error);
+            checkbox.checked = !checkbox.checked; // Revert
+            return;
+          }
+          
+          design.is_sold = checkbox.checked;
+          
+          if (checkbox.checked) {
+            card.classList.add('sold');
+            toggleLabel.textContent = 'Sold';
+            toggleLabel.style.color = '#e74c3c';
+          } else {
+            card.classList.remove('sold');
+            toggleLabel.textContent = 'Available';
+            toggleLabel.style.color = '#666';
+          }
+          
+          updateStats();
+          
+        } catch (error) {
+          console.error('Error updating design:', error);
+          checkbox.checked = !checkbox.checked; // Revert
+        }
+      };
+      
+      const slider = document.createElement('span');
+      slider.className = 'slider';
+      
+      toggleSwitch.appendChild(checkbox);
+      toggleSwitch.appendChild(slider);
+      toggleContainer.appendChild(toggleLabel);
+      toggleContainer.appendChild(toggleSwitch);
+      
+      card.appendChild(thumbnail);
+      card.appendChild(name);
+      card.appendChild(stats);
+      card.appendChild(toggleContainer);
+      
+      return card;
+    }
+
+    async function loadDesigns() {
+      try {
+        const { data, error } = await supabase
+          .from('design_stats')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (error) {
+          throw error;
+        }
+        
+        return data || [];
+      } catch (error) {
+        console.error('Error loading designs:', error);
+        return [];
+      }
+    }
+
+    async function loadAdminPanel() {
+      const loading = document.getElementById('loading');
+      const grid = document.getElementById('designsGrid');
+      
+      loading.style.display = 'block';
+      grid.innerHTML = '';
+      
+      try {
+        designs = await loadDesigns();
+        
+        if (designs.length === 0) {
+          grid.innerHTML = '<div style="text-align: center; color: #666; padding: 40px;">No designs found. Please upload some designs first.</div>';
+          return;
+        }
+        
+        updateStats();
+        filterDesigns();
+        
+      } catch (error) {
+        console.error('Error loading designs:', error);
+        grid.innerHTML = '<div style="text-align: center; color: #666; padding: 40px;">Error loading designs. Please check your Supabase configuration.</div>';
+      } finally {
+        loading.style.display = 'none';
+      }
+    }
+
+    // Filter button event listeners
+    document.querySelectorAll('.filter-button').forEach(button => {
+      button.addEventListener('click', function() {
+        // Update active button
+        document.querySelectorAll('.filter-button').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        
+        // Update filter and re-render
+        currentFilter = this.dataset.filter;
+        filterDesigns();
+      });
+    });
+
+    // Initialize
+    async function init() {
+      await loadSupabaseConfig();
+      await initializeSupabase();
+      await loadAdminPanel();
+    }
+    
+    init();
+  </script>
+</body>
+</html>
