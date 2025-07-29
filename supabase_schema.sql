@@ -101,3 +101,40 @@ CREATE POLICY "Admin can manage designs" ON designs
 
 CREATE POLICY "Admin can manage ratings" ON ratings
   FOR ALL USING (auth.role() = 'admin');
+
+-- =============================================
+-- SETUP INSTRUCTIONS FOR SUPABASE STORAGE
+-- =============================================
+-- 
+-- 1. Go to your Supabase Dashboard
+-- 2. Navigate to Storage in the left sidebar
+-- 3. Click "Create a new bucket"
+-- 4. Name the bucket: "designs"
+-- 5. Make it public (uncheck "Private bucket")
+-- 6. Click "Create bucket"
+-- 
+-- 7. Go to Storage > Policies
+-- 8. Add these policies for the "designs" bucket:
+-- 
+-- Policy 1: "Public can view designs"
+-- - Operation: SELECT
+-- - Target roles: public
+-- - Policy definition: true
+-- 
+-- Policy 2: "Public can upload designs"
+-- - Operation: INSERT
+-- - Target roles: public
+-- - Policy definition: true
+-- 
+-- Policy 3: "Public can update designs"
+-- - Operation: UPDATE
+-- - Target roles: public
+-- - Policy definition: true
+-- 
+-- Policy 4: "Public can delete designs"
+-- - Operation: DELETE
+-- - Target roles: public
+-- - Policy definition: true
+-- 
+-- After setting up the storage bucket and policies,
+-- the upload system will work properly!
