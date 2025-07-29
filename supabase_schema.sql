@@ -35,6 +35,15 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+-- Create a function to delete designs by ID (for admin operations)
+CREATE OR REPLACE FUNCTION delete_design_by_id(design_id UUID)
+RETURNS BOOLEAN AS $$
+BEGIN
+    DELETE FROM designs WHERE id = design_id;
+    RETURN FOUND;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- Create trigger to automatically update updated_at
 CREATE TRIGGER update_designs_updated_at 
   BEFORE UPDATE ON designs 
@@ -80,6 +89,10 @@ CREATE POLICY "Public can update designs" ON designs
 
 -- Create policies for public delete access (for admin panel)
 CREATE POLICY "Public can delete designs" ON designs
+  FOR DELETE USING (true);
+
+-- Alternative more permissive delete policy (if the above doesn't work)
+CREATE POLICY "Allow all delete operations" ON designs
   FOR DELETE USING (true);
 
 -- Create policies for authenticated users to insert ratings

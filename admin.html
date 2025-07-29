@@ -638,8 +638,43 @@
         } else {
           console.log('Storage bucket exists and is accessible');
         }
+        
+        // Test database permissions
+        await testDatabasePermissions();
+        
       } catch (error) {
         console.error('Error checking storage bucket:', error);
+      }
+    }
+
+    async function testDatabasePermissions() {
+      try {
+        console.log('Testing database permissions...');
+        
+        // Test SELECT permission
+        const { data: selectData, error: selectError } = await supabase
+          .from('designs')
+          .select('count')
+          .limit(1);
+        
+        console.log('SELECT permission test:', { selectData, selectError });
+        
+        // Test DELETE permission with a non-existent ID
+        const { data: deleteData, error: deleteError } = await supabase
+          .from('designs')
+          .delete()
+          .eq('id', '00000000-0000-0000-0000-000000000000')
+          .select();
+        
+        console.log('DELETE permission test:', { deleteData, deleteError });
+        
+        if (deleteError && deleteError.code === '42501') {
+          console.error('RLS policy is blocking DELETE operations');
+          console.log('You need to update the RLS policies for the designs table');
+        }
+        
+      } catch (error) {
+        console.error('Error testing database permissions:', error);
       }
     }
 
@@ -827,10 +862,43 @@
           
           // Then delete the design record from the database
           console.log('Attempting to delete from database...');
+          console.log('Design ID to delete:', design.id);
+          
+          // First, let's check if the design actually exists
+          const { data: checkData, error: checkError } = await supabase
+            .from('designs')
+            .select('id, name, filename')
+            .eq('id', design.id)
+            .single();
+          
+          console.log('Design existence check:', { checkData, checkError });
+          
+          if (checkError) {
+            console.error('Error checking if design exists:', checkError);
+            if (checkError.code === 'PGRST116') {
+              console.log('Design not found in database - may have already been deleted');
+              alert('Design not found in database. It may have already been deleted.');
+              deleteButton.disabled = false;
+              deleteButton.innerHTML = '<i class="fas fa-trash"></i> Delete Design';
+              return;
+            }
+          }
+          
+          if (!checkData) {
+            console.log('Design not found in database');
+            alert('Design not found in database.');
+            deleteButton.disabled = false;
+            deleteButton.innerHTML = '<i class="fas fa-trash"></i> Delete Design';
+            return;
+          }
+          
+          console.log('Design found in database:', checkData);
+          
           const { data: dbData, error } = await supabase
             .from('designs')
             .delete()
-            .eq('id', design.id);
+            .eq('id', design.id)
+            .select(); // Add select() to see what was actually deleted
           
           console.log('Database deletion result:', { dbData, error });
           
@@ -842,7 +910,46 @@
             return;
           }
           
-          console.log('Successfully deleted design from database');
+          // Check if anything was actually deleted
+          if (!dbData || dbData.length === 0) {
+            console.warn('No rows were deleted from database');
+            console.log('This might be due to RLS policies or the design not existing');
+            
+            // Try alternative deletion method using raw SQL
+            console.log('Trying alternative deletion method with raw SQL...');
+            try {
+              const { data: sqlData, error: sqlError } = await supabase
+                .rpc('delete_design_by_id', { design_id: design.id });
+              
+              console.log('Raw SQL deletion result:', { sqlData, sqlError });
+              
+              if (sqlError) {
+                console.error('Raw SQL deletion failed:', sqlError);
+                alert('Unable to delete design. This might be due to database permissions. Please try again or contact support.');
+                deleteButton.disabled = false;
+                deleteButton.innerHTML = '<i class="fas fa-trash"></i> Delete Design';
+                return;
+              }
+              
+              if (sqlData === true) {
+                console.log('Raw SQL deletion successful');
+              } else {
+                console.warn('Raw SQL deletion returned false - design may not exist');
+                alert('Design not found or already deleted.');
+                deleteButton.disabled = false;
+                deleteButton.innerHTML = '<i class="fas fa-trash"></i> Delete Design';
+                return;
+              }
+            } catch (sqlError) {
+              console.error('Raw SQL deletion error:', sqlError);
+              alert('Error deleting design. Please try again.');
+              deleteButton.disabled = false;
+              deleteButton.innerHTML = '<i class="fas fa-trash"></i> Delete Design';
+              return;
+            }
+          } else {
+            console.log('Successfully deleted design from database:', dbData);
+          }
           
           // Remove the card from the UI
           card.remove();
@@ -1070,6 +1177,12 @@
         const simpleIndex = designName.toLowerCase().indexOf(' simple');
         if (simpleIndex !== -1) {
           designName = designName.substring(0, simpleIndex);
+        }
+        
+        // Cut off at the word "remix" (case insensitive)
+        const remixIndex = designName.toLowerCase().indexOf(' remix');
+        if (remixIndex !== -1) {
+          designName = designName.substring(0, remixIndex);
         }
         
         return designName.trim();
