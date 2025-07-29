@@ -86,6 +86,10 @@ CREATE POLICY "Public can delete designs" ON designs
 CREATE POLICY "Public can insert ratings" ON ratings
   FOR INSERT WITH CHECK (true);
 
+-- Create policy for public to update ratings (needed for upsert)
+CREATE POLICY "Public can update ratings" ON ratings
+  FOR UPDATE USING (true);
+
 -- Create policies for admin operations (you'll need to set up authentication)
 -- These are examples - adjust based on your auth setup
 CREATE POLICY "Admin can manage designs" ON designs
