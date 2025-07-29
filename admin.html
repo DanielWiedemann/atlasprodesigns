@@ -424,18 +424,6 @@
   </style>
 </head>
 <body>
-  <!-- Passcode Login Screen -->
-  <div id="passcode-screen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);display:flex;align-items:center;justify-content:center;z-index:9999;">
-    <div style="background:white;padding:40px;border-radius:16px;text-align:center;max-width:400px;width:90%;">
-      <h2 style="margin-bottom:30px;color:#333;">Admin Access</h2>
-      <input type="password" id="passcode-input" placeholder="Enter 6-digit passcode" maxlength="6" style="width:100%;padding:12px;border:2px solid #ddd;border-radius:8px;font-size:18px;text-align:center;margin-bottom:20px;" />
-      <button onclick="checkPasscode()" style="background:#3498db;color:white;border:none;padding:12px 24px;border-radius:8px;font-size:16px;cursor:pointer;width:100%;">Access Admin</button>
-      <p style="margin-top:20px;color:#666;font-size:14px;">Enter the 6-digit passcode to access the admin panel</p>
-    </div>
-  </div>
-
-  <!-- Admin Content (hidden until passcode is entered) -->
-  <div id="admin-content" style="display:none;">
   <a href="index.html" class="back-link">
     <i class="fas fa-arrow-left"></i> Back to Gallery
   </a>
@@ -514,81 +502,16 @@
       <!-- Designs will be loaded here -->
     </div>
   </div>
-</div>
 
   <script>
-    let supabase = null;
+    // Supabase configuration - will be loaded from API
     let SUPABASE_URL = null;
     let SUPABASE_ANON_KEY = null;
+    
     let designs = [];
+    let supabase;
     let currentFilter = 'all';
     let selectedFiles = [];
-
-    // Passcode system
-    const CORRECT_PASSCODE = atob('MTIzNzg5'); 
-    
-    function checkPasscode() {
-      const passcodeInput = document.getElementById('passcode-input');
-      const passcode = passcodeInput.value;
-      const adminContent = document.getElementById('admin-content');
-      const passcodeScreen = document.getElementById('passcode-screen');
-
-      if (passcode === CORRECT_PASSCODE) {
-        // Save to localStorage so user doesn't have to enter it again
-        localStorage.setItem('admin_authenticated', 'true');
-        localStorage.setItem('admin_auth_timestamp', Date.now().toString());
-        
-        passcodeScreen.style.display = 'none';
-        adminContent.style.display = 'block';
-        init(); // Initialize admin content
-      } else {
-        alert('Incorrect passcode. Please try again.');
-        passcodeInput.value = ''; // Clear input
-        passcodeInput.focus();
-      }
-    }
-
-    function checkSavedAuth() {
-      const isAuthenticated = localStorage.getItem('admin_authenticated');
-      const authTimestamp = localStorage.getItem('admin_auth_timestamp');
-      
-      if (isAuthenticated && authTimestamp) {
-        // Check if authentication is still valid (24 hours)
-        const now = Date.now();
-        const authTime = parseInt(authTimestamp);
-        const hoursSinceAuth = (now - authTime) / (1000 * 60 * 60);
-        
-        if (hoursSinceAuth < 24) {
-          // Still authenticated, show admin content
-          document.getElementById('passcode-screen').style.display = 'none';
-          document.getElementById('admin-content').style.display = 'block';
-          return true;
-        } else {
-          // Authentication expired, clear it
-          localStorage.removeItem('admin_authenticated');
-          localStorage.removeItem('admin_auth_timestamp');
-        }
-      }
-      return false;
-    }
-
-    // Add enter key support for passcode input
-    document.addEventListener('DOMContentLoaded', function() {
-      const passcodeInput = document.getElementById('passcode-input');
-      passcodeInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-          checkPasscode();
-        }
-      });
-      
-      // Check if user is already authenticated
-      if (!checkSavedAuth()) {
-        passcodeInput.focus();
-      } else {
-        // User is already authenticated, initialize admin
-        init();
-      }
-    });
 
     async function loadSupabaseConfig() {
       try {
@@ -853,11 +776,6 @@
 
     // Initialize
     async function init() {
-      // Only initialize if user is authenticated
-      if (!checkSavedAuth()) {
-        return;
-      }
-      
       await loadSupabaseConfig();
       await initializeSupabase();
       await loadAdminPanel();
@@ -1000,30 +918,12 @@
     
     async function uploadDesignToSupabase(design, supabaseUrl, supabaseKey, imageUrlPrefix) {
       try {
-        // First upload the image file to Supabase Storage
-        const { data: storageData, error: storageError } = await supabase.storage
-          .from('designs')
-          .upload(design.filename, design.file, {
-            cacheControl: '3600',
-            upsert: false
-          });
-        
-        if (storageError) {
-          throw storageError;
-        }
-        
-        // Get the public URL for the uploaded image
-        const { data: urlData } = supabase.storage
-          .from('designs')
-          .getPublicUrl(design.filename);
-        
-        // Now insert the design record with the public URL
         const { data, error } = await supabase
           .from('designs')
           .insert({
             filename: design.filename,
             name: design.name,
-            image_url: urlData.publicUrl
+            image_url: design.image_url
           });
         
         if (error) {
@@ -1063,11 +963,14 @@
           // Extract design name
           const designName = extractDesignName(file.name);
           
+          // Create image URL (assuming files are in designs/ folder)
+          const imageUrl = `designs/${file.name}`;
+          
           // Upload to Supabase
           const result = await uploadDesignToSupabase({
             filename: file.name,
             name: designName,
-            file: file // Pass the File object for Supabase Storage upload
+            image_url: imageUrl
           }, SUPABASE_URL, SUPABASE_ANON_KEY, 'designs/');
           
           if (result.success) {
@@ -1097,6 +1000,8 @@
         await loadAdminPanel();
       }, 3000);
     }
+    
+    init();
   </script>
 </body>
 </html>

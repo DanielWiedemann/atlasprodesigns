@@ -64,33 +64,6 @@
       object-fit: contain;
       display: block;
       background: #f8f9fa;
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-      -webkit-user-drag: none;
-      -khtml-user-drag: none;
-      -moz-user-drag: none;
-      -o-user-drag: none;
-      user-drag: none;
-      pointer-events: none;
-      -webkit-touch-callout: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-    .design-image-container {
-      position: relative;
-      overflow: hidden;
-    }
-    .design-image-container::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: transparent;
-      z-index: 1;
-      pointer-events: none;
     }
     .design-info {
       padding: 20px;
@@ -226,6 +199,9 @@
   </style>
 </head>
 <body>
+  <a href="admin.html" class="admin-link">
+    <i class="fas fa-cog"></i> Admin
+  </a>
   
   <div class="atlas-logo"><img src="logo.png" alt="Atlas Pro Logo" /></div>
   <h1>Designs Gallery</h1>
@@ -237,8 +213,7 @@
       </div>
     </div>
   </div>
-  <div id="version-badge" style="position:fixed;bottom:10px;right:10px;z-index:999;background:#e0e0e0;color:#fff;padding:2px 8px;border-radius:6px;font-size:0.85em;font-family:monospace;box-shadow:0 1px 4px rgba(0,0,0,0.04);opacity:0.7;">
-    v1.0.18</div>
+  <div id="version-badge" style="position:fixed;bottom:10px;right:10px;z-index:999;background:#e0e0e0;color:#fff;padding:2px 8px;border-radius:6px;font-size:0.85em;font-family:monospace;box-shadow:0 1px 4px rgba(0,0,0,0.04);opacity:0.7;">v1.0.16</div>
 
   <script>
     let supabase = null;
@@ -411,14 +386,11 @@
       card.className = 'design-card';
       card.dataset.designId = design.id;
       
-      const imageContainer = document.createElement('div');
-      imageContainer.className = 'design-image-container';
       const image = document.createElement('img');
       image.className = 'design-image';
       image.src = design.image_url;
       image.alt = design.name;
       image.loading = 'lazy';
-      imageContainer.appendChild(image);
       
       const info = document.createElement('div');
       info.className = 'design-info';
@@ -432,6 +404,9 @@
       info.appendChild(name);
       info.appendChild(rating);
       
+      card.appendChild(image);
+      card.appendChild(info);
+      
       // Add SOLD overlay if design is sold
       if (design.is_sold) {
         card.classList.add('sold');
@@ -440,9 +415,6 @@
         overlay.innerHTML = '<div class="sold-text">SOLD</div>';
         card.appendChild(overlay);
       }
-      
-      card.appendChild(imageContainer);
-      card.appendChild(info);
       
       return card;
     }
@@ -474,42 +446,7 @@
       if (SUPABASE_URL && SUPABASE_ANON_KEY) {
         await initializeSupabase();
         await renderGallery();
-        setupImageProtection();
       }
-    }
-
-    // Image protection functions
-    function setupImageProtection() {
-      // Prevent right-click context menu
-      document.addEventListener('contextmenu', function(e) {
-        e.preventDefault();
-        return false;
-      });
-
-      // Prevent keyboard shortcuts
-      document.addEventListener('keydown', function(e) {
-        // Prevent Ctrl+S (save), Ctrl+U (view source), F12 (dev tools)
-        if ((e.ctrlKey && (e.key === 's' || e.key === 'u')) || e.key === 'F12') {
-          e.preventDefault();
-          return false;
-        }
-      });
-
-      // Prevent drag and drop of images
-      document.addEventListener('dragstart', function(e) {
-        if (e.target.tagName === 'IMG') {
-          e.preventDefault();
-          return false;
-        }
-      });
-
-      // Prevent opening images in new tab
-      document.addEventListener('click', function(e) {
-        if (e.target.tagName === 'IMG') {
-          e.preventDefault();
-          return false;
-        }
-      });
     }
 
     init();
