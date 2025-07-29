@@ -231,6 +231,26 @@
       background: #bdc3c7;
       cursor: not-allowed;
     }
+    .delete-button {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-top: 12px;
+      width: 100%;
+    }
+    .delete-button:hover {
+      background: #c0392b;
+    }
+    .delete-button:disabled {
+      background: #bdc3c7;
+      cursor: not-allowed;
+    }
     .loading {
       display: none;
       text-align: center;
@@ -483,10 +503,61 @@
       toggleContainer.appendChild(toggleLabel);
       toggleContainer.appendChild(toggleSwitch);
       
+      // Add delete button
+      const deleteButton = document.createElement('button');
+      deleteButton.className = 'delete-button';
+      deleteButton.innerHTML = '<i class="fas fa-trash"></i> Delete Design';
+      deleteButton.onclick = async function(e) {
+        e.stopPropagation();
+        
+        if (!confirm(`Are you sure you want to delete "${design.name}"? This action cannot be undone.`)) {
+          return;
+        }
+        
+        deleteButton.disabled = true;
+        deleteButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+        
+        try {
+          const { error } = await supabase
+            .from('designs')
+            .delete()
+            .eq('id', design.id);
+          
+          if (error) {
+            console.error('Error deleting design:', error);
+            alert('Error deleting design. Please try again.');
+            deleteButton.disabled = false;
+            deleteButton.innerHTML = '<i class="fas fa-trash"></i> Delete Design';
+            return;
+          }
+          
+          // Remove the card from the UI
+          card.remove();
+          
+          // Update the designs array
+          designs = designs.filter(d => d.id !== design.id);
+          
+          // Update stats
+          updateStats();
+          
+          // Re-filter if needed
+          if (currentFilter !== 'all') {
+            filterDesigns();
+          }
+          
+        } catch (error) {
+          console.error('Error deleting design:', error);
+          alert('Error deleting design. Please try again.');
+          deleteButton.disabled = false;
+          deleteButton.innerHTML = '<i class="fas fa-trash"></i> Delete Design';
+        }
+      };
+      
       card.appendChild(thumbnail);
       card.appendChild(name);
       card.appendChild(stats);
       card.appendChild(toggleContainer);
+      card.appendChild(deleteButton);
       
       return card;
     }

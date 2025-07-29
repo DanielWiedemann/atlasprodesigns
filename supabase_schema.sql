@@ -78,6 +78,10 @@ CREATE POLICY "Public can insert designs" ON designs
 CREATE POLICY "Public can update designs" ON designs
   FOR UPDATE USING (true);
 
+-- Create policies for public delete access (for admin panel)
+CREATE POLICY "Public can delete designs" ON designs
+  FOR DELETE USING (true);
+
 -- Create policies for authenticated users to insert ratings
 CREATE POLICY "Public can insert ratings" ON ratings
   FOR INSERT WITH CHECK (true);
