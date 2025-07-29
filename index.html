@@ -100,15 +100,7 @@
     .star.filled {
       color: #ffd700;
     }
-    .star:hover,
-    .star:hover ~ .star {
-      color: #ffd700;
-    }
-    .stars:hover .star {
-      color: #ddd;
-    }
-    .stars:hover .star:hover,
-    .stars:hover .star:hover ~ .star {
+    .star:hover {
       color: #ffd700;
     }
     .rating-text {
@@ -121,7 +113,7 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(0, 0, 0, 0.7);
+      background: rgba(255, 255, 255, 0.7);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -309,6 +301,23 @@
           } catch (error) {
             console.error('Error submitting rating:', error);
           }
+        });
+        
+        // Add hover events for left-to-right filling
+        star.addEventListener('mouseenter', () => {
+          const allStars = stars.querySelectorAll('.star');
+          const starIndex = parseInt(star.dataset.value) - 1;
+          allStars.forEach((s, index) => {
+            s.style.color = index <= starIndex ? '#ffd700' : '#ddd';
+          });
+        });
+        
+        star.addEventListener('mouseleave', () => {
+          const allStars = stars.querySelectorAll('.star');
+          const userRating = localStorage.getItem(`rating_${designId}`) || 0;
+          allStars.forEach((s, index) => {
+            s.style.color = index < userRating ? '#ffd700' : '#ddd';
+          });
         });
         
         stars.appendChild(star);
