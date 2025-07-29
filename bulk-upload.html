@@ -615,7 +615,10 @@
       const fileInput = document.getElementById('fileInput');
       
       // Click to upload
-      fileUploadArea.addEventListener('click', () => {
+      fileUploadArea.addEventListener('click', (e) => {
+        // Prevent the click from triggering multiple times
+        e.preventDefault();
+        e.stopPropagation();
         fileInput.click();
       });
       
@@ -625,6 +628,11 @@
         selectedFiles = selectedFiles.concat(files);
         updateFileList();
         fileInput.value = ''; // Reset input
+      });
+      
+      // Prevent file input from triggering upload area click
+      fileInput.addEventListener('click', (e) => {
+        e.stopPropagation();
       });
       
       // Drag and drop
