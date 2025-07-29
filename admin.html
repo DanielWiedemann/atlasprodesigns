@@ -448,11 +448,11 @@
       <h2>Design Management</h2>
       <p>Upload new designs, manage existing ones, and view statistics</p>
       
-      <div style="margin-top: 20px;">
-        <button onclick="cleanupOrphanedFiles()" style="background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-right: 10px;">
-          <i class="fas fa-broom"></i> Cleanup Orphaned Files
+      <div style="margin-top: 20px; text-align: right;">
+        <button onclick="cleanupOrphanedFiles()" style="background: #e74c3c; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; font-size: 0.8rem;">
+          <i class="fas fa-broom"></i> Cleanup
         </button>
-        <small style="color: #666;">Removes files from storage that don't exist in database</small>
+        <small style="color: #666; margin-left: 8px;">Removes orphaned files</small>
       </div>
     </div>
     
@@ -697,7 +697,7 @@
       document.getElementById('averageRating').textContent = averageRating.toFixed(1);
     }
 
-    async function cleanupOrphanedFiles() {
+    async function cleanupOrphanedFiles(silent = false) {
       try {
         console.log('Starting cleanup of orphaned files...');
         
@@ -736,11 +736,15 @@
             console.error('Error deleting orphaned files:', deleteError);
           } else {
             console.log(`Successfully deleted ${orphanedFiles.length} orphaned files`);
-            alert(`Cleaned up ${orphanedFiles.length} orphaned files from storage.`);
+            if (!silent) {
+              alert(`Cleaned up ${orphanedFiles.length} orphaned files from storage.`);
+            }
           }
         } else {
           console.log('No orphaned files found');
-          alert('No orphaned files found in storage.');
+          if (!silent) {
+            alert('No orphaned files found in storage.');
+          }
         }
         
       } catch (error) {
@@ -1346,6 +1350,10 @@
       
       uploadButton.disabled = true;
       uploadProgress.style.display = 'block';
+      
+      // Auto-cleanup before upload
+      console.log('Performing automatic cleanup before upload...');
+      await cleanupOrphanedFiles(true); // Silent mode
       
       let uploadedCount = 0;
       let errorCount = 0;
