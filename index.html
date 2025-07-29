@@ -543,17 +543,7 @@
         return false;
       });
 
-      // Disable developer tools (basic protection)
-      setInterval(function() {
-        const devtools = /./;
-        devtools.toString = function() {
-          this.opened = true;
-        }
-        console.log('%c', devtools);
-        if (devtools.opened) {
-          document.body.innerHTML = '<div style="text-align:center;padding:50px;font-size:24px;">Access Denied</div>';
-        }
-      }, 1000);
+      // Note: Removed aggressive developer tools detection to prevent false positives
     }
 
     init();
