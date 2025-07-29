@@ -456,6 +456,22 @@
             <i class="fas fa-cloud-upload-alt"></i>
             <p>Drag & drop files here or click to browse</p>
             <p class="upload-hint">Supports .webp, .png, .jpg, .jpeg files</p>
+            <p class="upload-hint" style="color: #e74c3c; font-size: 0.9rem; margin-top: 10px;">
+              <i class="fas fa-info-circle"></i> 
+              <strong>Important:</strong> Make sure all image files are placed in the <code>designs/</code> folder before uploading.
+            </p>
+            <button onclick="checkDesignsFolder()" style="
+              background: #95a5a6;
+              color: white;
+              border: none;
+              padding: 8px 16px;
+              border-radius: 6px;
+              cursor: pointer;
+              font-size: 0.9rem;
+              margin-top: 10px;
+            ">
+              <i class="fas fa-folder-open"></i> Check designs/ folder
+            </button>
           </div>
           <input type="file" id="fileInput" multiple accept=".webp,.png,.jpg,.jpeg" style="display: none;">
         </div>
@@ -1052,6 +1068,7 @@
       
       let uploadedCount = 0;
       let errorCount = 0;
+      let missingFiles = [];
       
       for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i];
@@ -1059,7 +1076,7 @@
         // Update progress
         const progress = ((i + 1) / selectedFiles.length) * 100;
         progressFill.style.width = progress + '%';
-        progressText.textContent = `Uploading ${i + 1} of ${selectedFiles.length}: ${file.name}`;
+        progressText.textContent = `Processing ${i + 1} of ${selectedFiles.length}: ${file.name}`;
         
         try {
           // Extract design name
@@ -1067,6 +1084,16 @@
           
           // Create image URL (assuming files are in designs/ folder)
           const imageUrl = `designs/${file.name}`;
+          
+          // Check if the file actually exists (basic validation)
+          const fileExists = await checkFileExists(imageUrl);
+          
+          if (!fileExists) {
+            missingFiles.push(file.name);
+            errorCount++;
+            console.warn(`File not found: ${imageUrl}`);
+            continue;
+          }
           
           // Upload to Supabase
           const result = await uploadDesignToSupabase({
@@ -1088,10 +1115,24 @@
         }
       }
       
-      // Show results
-      progressText.textContent = `Upload complete! ${uploadedCount} uploaded, ${errorCount} failed.`;
+      // Show results with detailed information
+      let resultMessage = `Upload complete! ${uploadedCount} uploaded, ${errorCount} failed.`;
+      if (missingFiles.length > 0) {
+        resultMessage += `\n\nMissing files (not found in designs/ folder):\n${missingFiles.slice(0, 5).join('\n')}`;
+        if (missingFiles.length > 5) {
+          resultMessage += `\n... and ${missingFiles.length - 5} more`;
+        }
+        resultMessage += '\n\nPlease ensure all image files are placed in the designs/ folder before uploading.';
+        
+        // Show detailed guidance for missing files
+        setTimeout(() => {
+          showMissingFilesGuidance(missingFiles);
+        }, 1000);
+      }
       
-      // Reset after 3 seconds
+      progressText.textContent = resultMessage;
+      
+      // Reset after 5 seconds (longer to read the message)
       setTimeout(async () => {
         uploadProgress.style.display = 'none';
         selectedFiles = [];
@@ -1100,7 +1141,121 @@
         
         // Reload designs to show new uploads
         await loadAdminPanel();
-      }, 3000);
+      }, 5000);
+    }
+    
+    // Helper function to check if a file exists
+    async function checkFileExists(url) {
+      try {
+        const response = await fetch(url, { method: 'HEAD' });
+        return response.ok;
+      } catch (error) {
+        return false;
+      }
+    }
+    
+    // Helper function to show missing files guidance
+    function showMissingFilesGuidance(missingFiles) {
+      if (missingFiles.length === 0) return;
+      
+      const guidance = document.createElement('div');
+      guidance.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        max-width: 600px;
+        max-height: 80vh;
+        overflow-y: auto;
+        z-index: 10000;
+      `;
+      
+      guidance.innerHTML = `
+        <h3 style="color: #e74c3c; margin-bottom: 20px;">
+          <i class="fas fa-exclamation-triangle"></i> Missing Files
+        </h3>
+        <p>The following files were not found in the <code>designs/</code> folder:</p>
+        <ul style="max-height: 200px; overflow-y: auto; background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0;">
+          ${missingFiles.slice(0, 10).map(file => `<li><code>${file}</code></li>`).join('')}
+          ${missingFiles.length > 10 ? `<li>... and ${missingFiles.length - 10} more files</li>` : ''}
+        </ul>
+        <p><strong>To fix this:</strong></p>
+        <ol style="margin: 15px 0;">
+          <li>Place all image files in the <code>designs/</code> folder</li>
+          <li>Make sure the filenames match exactly (including spaces and special characters)</li>
+          <li>Try uploading again</li>
+        </ol>
+        <button onclick="this.parentElement.remove()" style="
+          background: #3498db;
+          color: white;
+          border: none;
+          padding: 10px 20px;
+          border-radius: 6px;
+          cursor: pointer;
+          font-weight: bold;
+        ">Got it</button>
+      `;
+      
+      document.body.appendChild(guidance);
+    }
+    
+    // Function to check what's in the designs folder
+    async function checkDesignsFolder() {
+      try {
+        // Try to fetch the designs.json file to see what files are expected
+        const response = await fetch('designs/designs.json');
+        if (response.ok) {
+          const designsData = await response.json();
+          
+          const info = document.createElement('div');
+          info.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            z-index: 10000;
+          `;
+          
+          info.innerHTML = `
+            <h3 style="color: #3498db; margin-bottom: 20px;">
+              <i class="fas fa-info-circle"></i> Designs Folder Status
+            </h3>
+            <p><strong>Expected files in designs/ folder:</strong> ${designsData.length}</p>
+            <p><strong>Sample files:</strong></p>
+            <ul style="max-height: 200px; overflow-y: auto; background: #f8f9fa; padding: 15px; border-radius: 8px; margin: 15px 0;">
+              ${designsData.slice(0, 10).map(file => `<li><code>${file}</code></li>`).join('')}
+              ${designsData.length > 10 ? `<li>... and ${designsData.length - 10} more files</li>` : ''}
+            </ul>
+            <p><strong>Note:</strong> Make sure all these image files are physically present in the designs/ folder before uploading.</p>
+            <button onclick="this.parentElement.remove()" style="
+              background: #3498db;
+              color: white;
+              border: none;
+              padding: 10px 20px;
+              border-radius: 6px;
+              cursor: pointer;
+              font-weight: bold;
+            ">Got it</button>
+          `;
+          
+          document.body.appendChild(info);
+        } else {
+          alert('Could not load designs.json file. Please check if the file exists.');
+        }
+      } catch (error) {
+        alert(`Error checking designs folder: ${error.message}`);
+      }
     }
   </script>
 </body>
