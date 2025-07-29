@@ -525,7 +525,7 @@
     let selectedFiles = [];
 
     // Passcode system
-    const CORRECT_PASSCODE = '123456';
+    const CORRECT_PASSCODE = atob('MTIzNzg5'); // Base64 encoded: 123789
     
     function checkPasscode() {
       const passcodeInput = document.getElementById('passcode-input');
