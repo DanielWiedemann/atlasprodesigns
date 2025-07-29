@@ -213,7 +213,7 @@
       </div>
     </div>
   </div>
-  <div id="version-badge" style="position:fixed;bottom:10px;right:10px;z-index:999;background:#e0e0e0;color:#fff;padding:2px 8px;border-radius:6px;font-size:0.85em;font-family:monospace;box-shadow:0 1px 4px rgba(0,0,0,0.04);opacity:0.7;">v1.0.14</div>
+  <div id="version-badge" style="position:fixed;bottom:10px;right:10px;z-index:999;background:#e0e0e0;color:#fff;padding:2px 8px;border-radius:6px;font-size:0.85em;font-family:monospace;box-shadow:0 1px 4px rgba(0,0,0,0.04);opacity:0.7;">v1.0.15</div>
 
   <script>
     let supabase = null;
@@ -291,14 +291,7 @@
           
           // Submit to Supabase
           try {
-            // First, try to delete any existing rating for this design and visitor
-            await supabase
-              .from('ratings')
-              .delete()
-              .eq('design_id', designId)
-              .eq('visitor_id', getVisitorId());
-            
-            // Then insert the new rating
+            // Try to insert the rating directly
             const { error } = await supabase
               .from('ratings')
               .insert({
@@ -308,7 +301,20 @@
               });
             
             if (error) {
-              console.error('Error submitting rating:', error);
+              // If there's a unique constraint error, try to update instead
+              if (error.code === '23505') {
+                const { error: updateError } = await supabase
+                  .from('ratings')
+                  .update({ rating: rating })
+                  .eq('design_id', designId)
+                  .eq('visitor_id', getVisitorId());
+                
+                if (updateError) {
+                  console.error('Error updating rating:', updateError);
+                }
+              } else {
+                console.error('Error submitting rating:', error);
+              }
             }
           } catch (error) {
             console.error('Error submitting rating:', error);

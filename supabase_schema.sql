@@ -90,6 +90,10 @@ CREATE POLICY "Public can insert ratings" ON ratings
 CREATE POLICY "Public can update ratings" ON ratings
   FOR UPDATE USING (true);
 
+-- Create policy for public to delete ratings (needed for rating updates)
+CREATE POLICY "Public can delete ratings" ON ratings
+  FOR DELETE USING (true);
+
 -- Create policies for admin operations (you'll need to set up authentication)
 -- These are examples - adjust based on your auth setup
 CREATE POLICY "Admin can manage designs" ON designs
