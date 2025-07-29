@@ -64,36 +64,6 @@
       object-fit: contain;
       display: block;
       background: #f8f9fa;
-      /* Prevent image downloading and selection */
-      -webkit-user-select: none;
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-      -webkit-touch-callout: none;
-      -webkit-user-drag: none;
-      -khtml-user-drag: none;
-      -moz-user-drag: none;
-      -o-user-drag: none;
-      user-drag: none;
-      pointer-events: none;
-    }
-    .image-container {
-      position: relative;
-      overflow: hidden;
-    }
-    .watermark {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%) rotate(-45deg);
-      color: rgba(255, 255, 255, 0.1);
-      font-size: 2rem;
-      font-weight: bold;
-      text-transform: uppercase;
-      pointer-events: none;
-      z-index: 5;
-      white-space: nowrap;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
     }
     .design-info {
       padding: 20px;
@@ -234,28 +204,13 @@
   <h1>Designs Gallery</h1>
   
   <div class="gallery-container">
-    <div style="text-align: center; margin-bottom: 20px;">
-      <button id="refresh-btn" style="
-        background: #3498db;
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: bold;
-        transition: background 0.2s;
-      " onmouseover="this.style.background='#2980b9'" onmouseout="this.style.background='#3498db'">
-        <i class="fas fa-sync-alt"></i> Refresh Designs
-      </button>
-    </div>
     <div id="gallery" class="gallery-grid">
       <div class="loading">
         <i class="fas fa-spinner fa-spin"></i> Loading designs...
       </div>
     </div>
   </div>
-  <div id="version-badge" style="position:fixed;bottom:10px;right:10px;z-index:999;background:#e0e0e0;color:#fff;padding:2px 8px;border-radius:6px;font-size:0.85em;font-family:monospace;box-shadow:0 1px 4px rgba(0,0,0,0.04);opacity:0.7;">v1.0.18</div>
+  <div id="version-badge" style="position:fixed;bottom:10px;right:10px;z-index:999;background:#e0e0e0;color:#fff;padding:2px 8px;border-radius:6px;font-size:0.85em;font-family:monospace;box-shadow:0 1px 4px rgba(0,0,0,0.04);opacity:0.7;">v1.0.17</div>
 
   <script>
     let supabase = null;
@@ -428,43 +383,11 @@
       card.className = 'design-card';
       card.dataset.designId = design.id;
       
-      // Create image container with watermark
-      const imageContainer = document.createElement('div');
-      imageContainer.className = 'image-container';
-      
       const image = document.createElement('img');
       image.className = 'design-image';
       image.src = design.image_url;
       image.alt = design.name;
       image.loading = 'lazy';
-      
-      // Add error handling for broken images
-      image.onerror = function() {
-        this.style.display = 'none';
-        const errorMsg = document.createElement('div');
-        errorMsg.style.cssText = `
-          width: 100%;
-          height: 400px;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          background: #f8f9fa;
-          color: #666;
-          font-size: 0.9rem;
-          text-align: center;
-          padding: 20px;
-        `;
-        errorMsg.innerHTML = '<i class="fas fa-exclamation-triangle"></i><br>Image not available';
-        this.parentNode.insertBefore(errorMsg, this);
-      };
-      
-      // Add watermark
-      const watermark = document.createElement('div');
-      watermark.className = 'watermark';
-      watermark.textContent = 'Atlas Pro';
-      
-      imageContainer.appendChild(image);
-      imageContainer.appendChild(watermark);
       
       const info = document.createElement('div');
       info.className = 'design-info';
@@ -478,7 +401,7 @@
       info.appendChild(name);
       info.appendChild(rating);
       
-      card.appendChild(imageContainer);
+      card.appendChild(image);
       card.appendChild(info);
       
       // Add SOLD overlay if design is sold
@@ -514,140 +437,13 @@
       });
     }
 
-    // Add periodic refresh to detect deleted designs
-    let refreshInterval;
-    
-    function startPeriodicRefresh() {
-      // Refresh every 30 seconds to detect deleted designs
-      refreshInterval = setInterval(async () => {
-        try {
-          const currentDesigns = await loadDesigns();
-          const currentDesignIds = currentDesigns.map(d => d.id);
-          const existingCards = document.querySelectorAll('.design-card');
-          const gallery = document.getElementById('gallery');
-          
-          // If no designs exist and we have cards, clear the gallery
-          if (currentDesigns.length === 0 && existingCards.length > 0) {
-            gallery.innerHTML = `
-              <div class="no-designs">
-                <i class="fas fa-images"></i><br>
-                No designs found. Please upload some designs first.
-              </div>
-            `;
-            return;
-          }
-          
-          // Remove cards for designs that no longer exist
-          existingCards.forEach(card => {
-            const designId = card.dataset.designId;
-            if (!currentDesignIds.includes(designId)) {
-              card.remove();
-            }
-          });
-          
-          // Add new designs if any
-          const existingDesignIds = Array.from(existingCards).map(card => card.dataset.designId);
-          currentDesigns.forEach(design => {
-            if (!existingDesignIds.includes(design.id)) {
-              const card = createDesignCard(design);
-              gallery.insertBefore(card, gallery.firstChild);
-            }
-          });
-        } catch (error) {
-          console.error('Error during periodic refresh:', error);
-        }
-      }, 30000); // 30 seconds
-    }
-
-    function stopPeriodicRefresh() {
-      if (refreshInterval) {
-        clearInterval(refreshInterval);
-      }
-    }
-
     // Initialize
     async function init() {
       await loadSupabaseConfig();
       if (SUPABASE_URL && SUPABASE_ANON_KEY) {
         await initializeSupabase();
         await renderGallery();
-        setupImageProtection();
-        startPeriodicRefresh(); // Start periodic refresh
-        
-        // Add refresh button functionality
-        document.getElementById('refresh-btn').addEventListener('click', async () => {
-          const btn = document.getElementById('refresh-btn');
-          const originalText = btn.innerHTML;
-          btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Refreshing...';
-          btn.disabled = true;
-          
-          try {
-            await renderGallery();
-          } catch (error) {
-            console.error('Error refreshing gallery:', error);
-          } finally {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
-          }
-        });
       }
-    }
-
-    // Image protection functions
-    function setupImageProtection() {
-      // Prevent right-click context menu
-      document.addEventListener('contextmenu', function(e) {
-        e.preventDefault();
-        return false;
-      });
-
-      // Prevent keyboard shortcuts for saving
-      document.addEventListener('keydown', function(e) {
-        // Prevent Ctrl+S, Ctrl+U, F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C
-        if (
-          (e.ctrlKey && e.key === 's') ||
-          (e.ctrlKey && e.key === 'u') ||
-          (e.key === 'F12') ||
-          (e.ctrlKey && e.shiftKey && e.key === 'I') ||
-          (e.ctrlKey && e.shiftKey && e.key === 'J') ||
-          (e.ctrlKey && e.shiftKey && e.key === 'C')
-        ) {
-          e.preventDefault();
-          return false;
-        }
-      });
-
-      // Prevent drag and drop
-      document.addEventListener('dragstart', function(e) {
-        e.preventDefault();
-        return false;
-      });
-
-      // Prevent selection
-      document.addEventListener('selectstart', function(e) {
-        e.preventDefault();
-        return false;
-      });
-
-      // Prevent copy
-      document.addEventListener('copy', function(e) {
-        e.preventDefault();
-        return false;
-      });
-
-      // Prevent cut
-      document.addEventListener('cut', function(e) {
-        e.preventDefault();
-        return false;
-      });
-
-      // Prevent paste
-      document.addEventListener('paste', function(e) {
-        e.preventDefault();
-        return false;
-      });
-
-      // Note: Removed aggressive developer tools detection to prevent false positives
     }
 
     init();
