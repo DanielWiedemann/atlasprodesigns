@@ -290,9 +290,17 @@
           
           // Submit to Supabase
           try {
+            // First, try to delete any existing rating for this design and visitor
+            await supabase
+              .from('ratings')
+              .delete()
+              .eq('design_id', designId)
+              .eq('visitor_id', getVisitorId());
+            
+            // Then insert the new rating
             const { error } = await supabase
               .from('ratings')
-              .upsert({
+              .insert({
                 design_id: designId,
                 visitor_id: getVisitorId(),
                 rating: rating
@@ -427,5 +435,4 @@
     init();
   </script>
 </body>
-</html>
 </html>
