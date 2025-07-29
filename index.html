@@ -263,6 +263,26 @@
       height: auto;
       display: block;
     }
+    .loading-indicator {
+      text-align: center;
+      padding: 20px;
+      color: #666;
+      font-size: 0.9rem;
+    }
+    .loading-spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #f3f3f3;
+      border-top: 2px solid #3498db;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-right: 10px;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
@@ -348,41 +368,151 @@
 
     let modalImages = [];
     let modalIndex = 0;
+    let allImages = [];
+    let allRatings = [];
+    let loadedCount = 0;
+    const INITIAL_LOAD_COUNT = 12; // Load first 12 images immediately
+    const BATCH_SIZE = 6; // Load 6 more images at a time
 
     async function renderGallery() {
       const gallery = document.getElementById('gallery');
       gallery.innerHTML = '';
-      const images = await fetchImages();
-      modalImages = images;
-      // Fetch ratings from Apps Script endpoint (GET)
-      let allRatings = [];
-      try {
-        const res = await fetch(SHEET_GET_URL);
-        if (res.ok) allRatings = await res.json();
-      } catch (e) { allRatings = []; }
-      // Show newest images first
-      images.slice().reverse().forEach((img, idx) => {
-        const card = document.createElement('div');
-        card.className = 'design-card';
-        const image = document.createElement('img');
-        image.src = `designs/${img}`;
-        image.alt = img;
-        image.className = 'design-img';
-        // Add click to open modal
-        image.onclick = function() {
-          openModal(images.length - 1 - idx); // Adjust index for reversed order
-        };
-        // Calculate average rating if available
-        let avgRating = null;
-        const ratingsForImg = allRatings.filter(r => r.design === img && !isNaN(Number(r.rating)));
-        if (ratingsForImg.length > 0) {
-          const arr = ratingsForImg.map(r => Number(r.rating));
-          avgRating = arr.reduce((a, b) => a + b, 0) / arr.length;
-        }
-        card.appendChild(image);
-        card.appendChild(createStarRating(img, avgRating));
-        gallery.appendChild(card);
+      
+      // Fetch images and ratings in parallel
+      const [images, ratings] = await Promise.all([
+        fetchImages(),
+        fetch(SHEET_GET_URL).then(res => res.ok ? res.json() : []).catch(() => [])
+      ]);
+      
+      allImages = images.slice().reverse(); // Newest first
+      allRatings = ratings;
+      modalImages = images; // Keep original order for modal
+      loadedCount = 0;
+      
+      // Load initial batch
+      await loadImageBatch(0, Math.min(INITIAL_LOAD_COUNT, allImages.length));
+      
+      // Set up intersection observer for lazy loading
+      setupLazyLoading();
+    }
+
+    async function loadImageBatch(startIndex, endIndex) {
+      const gallery = document.getElementById('gallery');
+      const fragment = document.createDocumentFragment();
+      
+      for (let i = startIndex; i < endIndex && i < allImages.length; i++) {
+        const img = allImages[i];
+        const card = createImageCard(img, i);
+        fragment.appendChild(card);
+      }
+      
+      gallery.appendChild(fragment);
+      loadedCount = endIndex;
+      
+      // Preload next batch in background
+      const nextBatchStart = endIndex;
+      const nextBatchEnd = Math.min(endIndex + BATCH_SIZE, allImages.length);
+      if (nextBatchStart < allImages.length) {
+        preloadImages(nextBatchStart, nextBatchEnd);
+      }
+    }
+
+    function createImageCard(img, displayIndex) {
+      const card = document.createElement('div');
+      card.className = 'design-card';
+      
+      const image = document.createElement('img');
+      image.src = `designs/${img}`;
+      image.alt = img;
+      image.className = 'design-img';
+      image.loading = 'lazy'; // Enable native lazy loading
+      
+      // Add click to open modal
+      image.onclick = function() {
+        // Find the original index in the non-reversed array for modal
+        const originalIndex = allImages.length - 1 - displayIndex;
+        openModal(originalIndex);
+      };
+      
+      // Calculate average rating if available
+      let avgRating = null;
+      const ratingsForImg = allRatings.filter(r => r.design === img && !isNaN(Number(r.rating)));
+      if (ratingsForImg.length > 0) {
+        const arr = ratingsForImg.map(r => Number(r.rating));
+        avgRating = arr.reduce((a, b) => a + b, 0) / arr.length;
+      }
+      
+      card.appendChild(image);
+      card.appendChild(createStarRating(img, avgRating));
+      
+      return card;
+    }
+
+    // Preload images in the background for better performance
+    function preloadImages(startIndex, endIndex) {
+      for (let i = startIndex; i < endIndex && i < allImages.length; i++) {
+        const img = new Image();
+        img.src = `designs/${allImages[i]}`;
+      }
+    }
+
+    function setupLazyLoading() {
+      // Create a sentinel element for intersection observer
+      const sentinel = document.createElement('div');
+      sentinel.style.height = '20px';
+      sentinel.style.width = '100%';
+      sentinel.id = 'loading-sentinel';
+      
+      // Add loading indicator
+      const loadingIndicator = document.createElement('div');
+      loadingIndicator.className = 'loading-indicator';
+      loadingIndicator.innerHTML = '<div class="loading-spinner"></div>Loading more designs...';
+      loadingIndicator.id = 'loading-indicator';
+      loadingIndicator.style.display = 'none';
+      
+      const gallery = document.getElementById('gallery');
+      gallery.appendChild(sentinel);
+      gallery.appendChild(loadingIndicator);
+      
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting && loadedCount < allImages.length) {
+            // Show loading indicator
+            const loadingIndicator = document.getElementById('loading-indicator');
+            if (loadingIndicator) loadingIndicator.style.display = 'block';
+            
+            // Load next batch
+            const nextBatchStart = loadedCount;
+            const nextBatchEnd = Math.min(loadedCount + BATCH_SIZE, allImages.length);
+            
+            loadImageBatch(nextBatchStart, nextBatchEnd).then(() => {
+              // Hide loading indicator
+              const loadingIndicator = document.getElementById('loading-indicator');
+              if (loadingIndicator) loadingIndicator.style.display = 'none';
+              
+              // Move sentinel to end
+              const gallery = document.getElementById('gallery');
+              const sentinel = document.getElementById('loading-sentinel');
+              if (sentinel) {
+                gallery.appendChild(sentinel);
+              }
+              
+              // If we've loaded all images, disconnect observer
+              if (loadedCount >= allImages.length) {
+                observer.disconnect();
+                const sentinel = document.getElementById('loading-sentinel');
+                const loadingIndicator = document.getElementById('loading-indicator');
+                if (sentinel) sentinel.remove();
+                if (loadingIndicator) loadingIndicator.remove();
+              }
+            });
+          }
+        });
+      }, {
+        rootMargin: '100px' // Start loading 100px before the sentinel is visible
       });
+      
+      observer.observe(sentinel);
     }
 
     // Modal logic
