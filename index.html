@@ -64,6 +64,36 @@
       object-fit: contain;
       display: block;
       background: #f8f9fa;
+      /* Prevent image downloading and selection */
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+      -webkit-user-drag: none;
+      -khtml-user-drag: none;
+      -moz-user-drag: none;
+      -o-user-drag: none;
+      user-drag: none;
+      pointer-events: none;
+    }
+    .image-container {
+      position: relative;
+      overflow: hidden;
+    }
+    .watermark {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-45deg);
+      color: rgba(255, 255, 255, 0.1);
+      font-size: 2rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      pointer-events: none;
+      z-index: 5;
+      white-space: nowrap;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
     }
     .design-info {
       padding: 20px;
@@ -383,11 +413,23 @@
       card.className = 'design-card';
       card.dataset.designId = design.id;
       
+      // Create image container with watermark
+      const imageContainer = document.createElement('div');
+      imageContainer.className = 'image-container';
+      
       const image = document.createElement('img');
       image.className = 'design-image';
       image.src = design.image_url;
       image.alt = design.name;
       image.loading = 'lazy';
+      
+      // Add watermark
+      const watermark = document.createElement('div');
+      watermark.className = 'watermark';
+      watermark.textContent = 'Atlas Pro';
+      
+      imageContainer.appendChild(image);
+      imageContainer.appendChild(watermark);
       
       const info = document.createElement('div');
       info.className = 'design-info';
@@ -401,7 +443,7 @@
       info.appendChild(name);
       info.appendChild(rating);
       
-      card.appendChild(image);
+      card.appendChild(imageContainer);
       card.appendChild(info);
       
       // Add SOLD overlay if design is sold
@@ -443,7 +485,75 @@
       if (SUPABASE_URL && SUPABASE_ANON_KEY) {
         await initializeSupabase();
         await renderGallery();
+        setupImageProtection();
       }
+    }
+
+    // Image protection functions
+    function setupImageProtection() {
+      // Prevent right-click context menu
+      document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+        return false;
+      });
+
+      // Prevent keyboard shortcuts for saving
+      document.addEventListener('keydown', function(e) {
+        // Prevent Ctrl+S, Ctrl+U, F12, Ctrl+Shift+I, Ctrl+Shift+J, Ctrl+Shift+C
+        if (
+          (e.ctrlKey && e.key === 's') ||
+          (e.ctrlKey && e.key === 'u') ||
+          (e.key === 'F12') ||
+          (e.ctrlKey && e.shiftKey && e.key === 'I') ||
+          (e.ctrlKey && e.shiftKey && e.key === 'J') ||
+          (e.ctrlKey && e.shiftKey && e.key === 'C')
+        ) {
+          e.preventDefault();
+          return false;
+        }
+      });
+
+      // Prevent drag and drop
+      document.addEventListener('dragstart', function(e) {
+        e.preventDefault();
+        return false;
+      });
+
+      // Prevent selection
+      document.addEventListener('selectstart', function(e) {
+        e.preventDefault();
+        return false;
+      });
+
+      // Prevent copy
+      document.addEventListener('copy', function(e) {
+        e.preventDefault();
+        return false;
+      });
+
+      // Prevent cut
+      document.addEventListener('cut', function(e) {
+        e.preventDefault();
+        return false;
+      });
+
+      // Prevent paste
+      document.addEventListener('paste', function(e) {
+        e.preventDefault();
+        return false;
+      });
+
+      // Disable developer tools (basic protection)
+      setInterval(function() {
+        const devtools = /./;
+        devtools.toString = function() {
+          this.opened = true;
+        }
+        console.log('%c', devtools);
+        if (devtools.opened) {
+          document.body.innerHTML = '<div style="text-align:center;padding:50px;font-size:24px;">Access Denied</div>';
+        }
+      }, 1000);
     }
 
     init();
