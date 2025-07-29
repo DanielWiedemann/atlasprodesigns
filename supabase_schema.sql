@@ -74,6 +74,10 @@ CREATE POLICY "Public can view ratings" ON ratings
 CREATE POLICY "Public can insert designs" ON designs
   FOR INSERT WITH CHECK (true);
 
+-- Create policies for public update access (for admin panel)
+CREATE POLICY "Public can update designs" ON designs
+  FOR UPDATE USING (true);
+
 -- Create policies for authenticated users to insert ratings
 CREATE POLICY "Public can insert ratings" ON ratings
   FOR INSERT WITH CHECK (true);

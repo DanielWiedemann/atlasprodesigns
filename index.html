@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>T-Shirt Designs Gallery</title>
+  <title>Atlas Pro Designs</title>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Archivo:wght@900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
   <link rel="icon" type="image/x-icon" href="favicon.ico" />
@@ -14,272 +14,6 @@
       background-size: 450px;
       margin: 0;
       padding: 0;
-    }
-    .atlas-pro {
-      font-family: 'Archivo', 'Montserrat', sans-serif;
-      font-size: 3rem;
-      font-weight: 900;
-      letter-spacing: 0.2em;
-      text-align: center;
-      margin-top: 32px;
-      color: #1a1a1a;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.07);
-    }
-    h1 {
-      text-align: center;
-      margin-top: 15px;
-      color: #000000;
-      text-transform: uppercase;
-      font-size: 1.6rem;
-    }
-    .gallery {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 32px;
-      max-width: 1100px;
-      margin: 40px auto;
-      padding: 0 20px;
-    }
-    .design-card {
-      position: relative;
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      transition: box-shadow 0.2s;
-    }
-    .design-card.sold {
-      opacity: 0.8;
-    }
-    .sold-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: linear-gradient(45deg, transparent 30%, rgba(231, 76, 60, 0.9) 30%, rgba(231, 76, 60, 0.9) 70%, transparent 70%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 10px;
-      z-index: 2;
-      pointer-events: none;
-    }
-    .sold-text {
-      color: white;
-      font-weight: bold;
-      font-size: 1.5rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-      transform: rotate(-45deg);
-      background: rgba(231, 76, 60, 0.9);
-      padding: 8px 16px;
-      border-radius: 8px;
-      border: 2px solid white;
-    }
-    .design-card:hover {
-      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
-    }
-    .design-img {
-      width: 100%;
-      aspect-ratio: 2/3;
-      border-radius: 10px;
-      margin-bottom: 16px;
-      object-fit: contain;
-      background: #f0f0f0;
-      display: block;
-    }
-    .stars {
-      display: flex;
-      flex-direction: row-reverse;
-      justify-content: center;
-      margin-top: 0px;
-      margin-bottom: 20px;
-    }
-    .star {
-      font-size: 2rem;
-      color: #e0e0e0;
-      cursor: pointer;
-      transition: color 0.2s;
-    }
-    .star.selected,
-    .star:hover,
-    .star:hover ~ .star {
-      color: #ffc107;
-    }
-    .modal {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      z-index: 1000;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      overflow: auto;
-      box-sizing: border-box;
-      background: none;
-    }
-    .modal[style*="display: flex"] {
-      display: flex !important;
-    }
-    .modal-backdrop {
-      position: absolute;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(30, 30, 40, 0.75);
-      z-index: 1;
-    }
-    .modal-content {
-      position: relative;
-      z-index: 2;
-      background: #fff;
-      border-radius: 18px;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.18);
-      padding: 24px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      max-width: 98vw;
-      max-height: 98vh;
-      box-sizing: border-box;
-      margin: 0;
-    }
-    .modal-content img {
-      max-width: 90vw;
-      max-height: 80vh;
-      border-radius: 12px;
-      box-shadow: 0 2px 16px rgba(0,0,0,0.12);
-      object-fit: contain;
-      background: #f0f0f0;
-      margin-bottom: 18px;
-      box-sizing: border-box;
-    }
-    .modal-close {
-      position: absolute;
-      top: 10px;
-      right: 18px;
-      font-size: 2.2rem;
-      color: #333;
-      cursor: pointer;
-      font-weight: bold;
-      z-index: 3;
-      transition: color 0.2s;
-    }
-    .modal-close:hover {
-      color: #e53935;
-    }
-    .modal-arrow {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 1rem;
-      color: #333;
-      background: rgba(255,255,255,0.7);
-      border-radius: 50%;
-      width: 25px;
-      height: 25px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      z-index: 4;
-      user-select: none;
-      transition: background 0.2s;
-    }
-    .modal-arrow:hover {
-      background: #ffc107;
-      color: #fff;
-    }
-    .modal-arrow-left {
-      left: 10px;
-    }
-    .modal-arrow-right {
-      right: 10px;
-    }
-    #modalRating {
-      margin-top: 10px;
-      display: flex;
-      justify-content: center;
-    }
-    .modal-bottom-row {
-      display: flex;
-      flex-direction: row;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      margin-top: 0.5em;
-      gap: 1em;
-    }
-    @media (max-width: 900px) {
-      .gallery {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-    @media (max-width: 600px) {
-      .gallery {
-        grid-template-columns: 1fr;
-      }
-      .design-img {
-        width: 100%;
-        height: auto;
-        aspect-ratio: 2/3;
-      }
-      .modal-content {
-        max-width: 100vw;
-        width: 100vw;
-        padding: 0;
-        margin: 0;
-        align-items: center;
-        justify-content: center;
-      }
-      .modal-content img {
-        max-width: 100vw;
-        width: 100vw;
-        max-height: 60vh;
-        margin: 0 auto 12px auto;
-        display: block;
-      }
-      .modal-arrow {
-        font-size: 1.2rem;
-        width: 22px;
-        height: 22px;
-        position: relative;
-        margin: 0 0.2em;
-        background: #fff;
-        color: #333;
-        box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        padding: 0;
-        top: 6px;
-      }
-      .modal-arrow-left {
-        left: -8vw;
-      }
-      .modal-arrow-right {
-        right: -8vw;
-      }
-      .atlas-logo img {
-        width: 90vw;
-        max-width: 90vw;
-      }
-      .modal-bottom-row {
-        flex-direction: row;
-        justify-content: center;
-        align-items: center;
-        width: 100vw;
-        margin: 0;
-        gap: 0.2em;
-        min-height: 32px;
-      }
-      #modalRating {
-        margin: 0;
-        display: flex;
-        align-items: center;
-      }
     }
     .atlas-logo {
       display: flex;
@@ -294,353 +28,424 @@
       height: auto;
       display: block;
     }
-    .loading-indicator {
+    h1 {
       text-align: center;
+      margin-top: 15px;
+      color: #000000;
+      text-transform: uppercase;
+      font-size: 1.6rem;
+    }
+    .gallery-container {
+      max-width: 1200px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 24px;
+      margin-top: 32px;
+    }
+    .design-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.07);
+      overflow: hidden;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+      position: relative;
+    }
+    .design-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+    }
+    .design-card.sold {
+      opacity: 0.8;
+    }
+    .design-image {
+      width: 100%;
+      height: 250px;
+      object-fit: cover;
+      display: block;
+    }
+    .design-info {
       padding: 20px;
-      color: #666;
+    }
+    .design-name {
+      font-size: 1.1rem;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+    .rating-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .stars {
+      display: flex;
+      gap: 2px;
+    }
+    .star {
+      color: #ddd;
+      cursor: pointer;
+      font-size: 1.2rem;
+      transition: color 0.2s;
+    }
+    .star.filled {
+      color: #ffd700;
+    }
+    .star:hover {
+      color: #ffd700;
+    }
+    .rating-text {
       font-size: 0.9rem;
+      color: #666;
     }
-    .loading-spinner {
-      display: inline-block;
-      width: 20px;
-      height: 20px;
-      border: 2px solid #f3f3f3;
-      border-top: 2px solid #3498db;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-right: 10px;
+    .sold-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.7);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
     }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+    .sold-text {
+      color: white;
+      font-size: 2rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      transform: rotate(-45deg);
+      background: rgba(220, 53, 69, 0.9);
+      padding: 8px 16px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.9);
+    }
+    .modal-content {
+      margin: auto;
+      display: block;
+      max-width: 90%;
+      max-height: 90%;
+      object-fit: contain;
+    }
+    .close {
+      position: absolute;
+      top: 15px;
+      right: 35px;
+      color: #f1f1f1;
+      font-size: 40px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .close:hover {
+      color: #bbb;
+    }
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #666;
+    }
+    .no-designs {
+      text-align: center;
+      padding: 60px 20px;
+      color: #666;
+      font-size: 1.1rem;
+    }
+    .admin-link {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #666;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: bold;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    .admin-link:hover {
+      background: #555;
     }
   </style>
 </head>
 <body>
-  <div class="atlas-logo"><img src="logo.png" alt="Atlas Pro Logo" /></div>
-  <h1>Designs Gallery</h1>
-  <a href="admin.html" style="position: fixed; top: 20px; right: 20px; background: #3498db; color: white; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem; font-weight: bold; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+  <a href="admin-supabase.html" class="admin-link">
     <i class="fas fa-cog"></i> Admin
   </a>
-  <div class="gallery" id="gallery">
-    <!-- Images will be loaded here by JavaScript -->
-  </div>
-  <div id="modal" class="modal" style="display:none;">
-    <div class="modal-backdrop"></div>
-    <div class="modal-content">
-      <span class="modal-close" id="modalClose">&times;</span>
-      <img id="modalImg" src="" alt="Design" />
-      <div class="modal-bottom-row">
-        <span class="modal-arrow modal-arrow-left" id="modalArrowLeft"><i class="fa-solid fa-arrow-left"></i></span>
-        <div id="modalRating"></div>
-        <span class="modal-arrow modal-arrow-right" id="modalArrowRight"><i class="fa-solid fa-arrow-right"></i></span>
+  
+  <div class="atlas-logo"><img src="logo.png" alt="Atlas Pro Logo" /></div>
+  <h1>Atlas Pro Designs</h1>
+  
+  <div class="gallery-container">
+    <div id="gallery" class="gallery-grid">
+      <div class="loading">
+        <i class="fas fa-spinner fa-spin"></i> Loading designs...
       </div>
     </div>
   </div>
-  <div id="version-badge" style="position:fixed;bottom:10px;right:10px;z-index:999;background:#e0e0e0;color:#fff;padding:2px 8px;border-radius:6px;font-size:0.85em;font-family:monospace;box-shadow:0 1px 4px rgba(0,0,0,0.04);opacity:0.7;">v1.0.14</div>
+
+  <!-- Modal for enlarged view -->
+  <div id="imageModal" class="modal">
+    <span class="close">&times;</span>
+    <img class="modal-content" id="modalImage">
+  </div>
+
   <script>
-    async function fetchImages() {
-      const res = await fetch('designs/designs.json');
-      return res.ok ? res.json() : [];
+    let supabase = null;
+    let SUPABASE_URL = null;
+    let SUPABASE_ANON_KEY = null;
+
+    async function loadSupabaseConfig() {
+      try {
+        const response = await fetch('/api/supabase-config');
+        if (response.ok) {
+          const config = await response.json();
+          SUPABASE_URL = config.supabaseUrl;
+          SUPABASE_ANON_KEY = config.supabaseAnonKey;
+        } else {
+          throw new Error('Failed to load Supabase configuration');
+        }
+      } catch (error) {
+        console.error('Error loading Supabase config:', error);
+        document.getElementById('gallery').innerHTML = `
+          <div class="no-designs">
+            <i class="fas fa-exclamation-triangle"></i><br>
+            Error loading Supabase configuration.<br>
+            Please check your environment variables.
+          </div>
+        `;
+        return false;
+      }
+      return true;
     }
 
-    // Use the Vercel proxy for POST (submitting ratings)
-    const GOOGLE_SHEET_API_URL = 'https://atlasprodesigns.vercel.app/api/submit-rating';
-    // Use the Apps Script endpoint for GET (fetching ratings/images)
-    const SHEET_GET_URL = 'https://script.google.com/macros/s/AKfycbwiVQ02J3wLudTJxM6Z_vNHUGKWwEwxXAVi4JvKIhbDIzs9Zfv_9sF7VhIsPT7PE9tQBQ/exec';
+    async function initializeSupabase() {
+      const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
+      supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
 
     function getVisitorId() {
-      let id = localStorage.getItem('visitor_id');
-      if (!id) {
-        id = Math.random().toString(36).substr(2, 9) + Date.now();
-        localStorage.setItem('visitor_id', id);
+      let visitorId = localStorage.getItem('atlas_visitor_id');
+      if (!visitorId) {
+        visitorId = 'visitor_' + Math.random().toString(36).substr(2, 9);
+        localStorage.setItem('atlas_visitor_id', visitorId);
       }
-      return id;
+      return visitorId;
     }
 
-    function createStarRating(designName, avgRating = null) {
+    function createStarRating(designId, avgRating) {
       const container = document.createElement('div');
-      container.className = 'stars';
-      // Get saved rating from localStorage
-      const savedRating = Number(localStorage.getItem('rating_' + designName)) || 0;
-      for (let i = 5; i >= 1; i--) {
-        const star = document.createElement('span');
-        star.className = 'star';
+      container.className = 'rating-container';
+      
+      const stars = document.createElement('div');
+      stars.className = 'stars';
+      
+      // Get user's previous rating
+      const userRating = localStorage.getItem(`rating_${designId}`) || 0;
+      
+      for (let i = 1; i <= 5; i++) {
+        const star = document.createElement('i');
+        star.className = `star ${i <= userRating ? 'filled' : ''}`;
         star.innerHTML = '★';
         star.dataset.value = i;
-        star.onclick = async function() {
-          // Save rating to localStorage
-          localStorage.setItem('rating_' + designName, i);
-          await fetch(GOOGLE_SHEET_API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({
-              timestamp: new Date().toISOString(),
-              design: designName,
-              rating: i,
-              visitor: getVisitorId()
-            })
+        star.dataset.designId = designId;
+        
+        star.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const rating = parseInt(star.dataset.value);
+          const designId = star.dataset.designId;
+          
+          // Update visual state
+          const allStars = stars.querySelectorAll('.star');
+          allStars.forEach((s, index) => {
+            s.classList.toggle('filled', index < rating);
           });
-          highlightStars(container, i);
-        };
-        star.onmouseover = function() { highlightStars(container, i); };
-        star.onmouseout = function() { highlightStars(container, Number(localStorage.getItem('rating_' + designName)) || 0); };
-        container.appendChild(star);
+          
+          // Save to localStorage
+          localStorage.setItem(`rating_${designId}`, rating);
+          
+          // Submit to Supabase
+          try {
+            const { error } = await supabase
+              .from('ratings')
+              .upsert({
+                design_id: designId,
+                visitor_id: getVisitorId(),
+                rating: rating
+              });
+            
+            if (error) {
+              console.error('Error submitting rating:', error);
+            }
+          } catch (error) {
+            console.error('Error submitting rating:', error);
+          }
+        });
+        
+        stars.appendChild(star);
       }
-      // Highlight saved rating on load
-      highlightStars(container, savedRating);
-      // (Removed average rating display)
+      
+      container.appendChild(stars);
+      
+      if (avgRating > 0) {
+        const ratingText = document.createElement('div');
+        ratingText.className = 'rating-text';
+        ratingText.textContent = `(${avgRating.toFixed(1)} avg)`;
+        container.appendChild(ratingText);
+      }
+      
       return container;
     }
 
     function highlightStars(container, value) {
       const stars = container.querySelectorAll('.star');
-      stars.forEach(star => {
-        star.classList.toggle('selected', star.dataset.value <= value);
+      stars.forEach((star, index) => {
+        star.classList.toggle('filled', index < value);
       });
     }
 
-    let modalImages = [];
-    let modalIndex = 0;
-    let allImages = [];
-    let allRatings = [];
-    let loadedCount = 0;
-    let soldDesigns = new Set();
-    const INITIAL_LOAD_COUNT = 12; // Load first 12 images immediately
-    const BATCH_SIZE = 6; // Load 6 more images at a time
-
-    function loadSoldDesigns() {
-      const saved = localStorage.getItem('sold_designs');
-      return saved ? new Set(JSON.parse(saved)) : new Set();
-    }
-
-    async function renderGallery() {
-      const gallery = document.getElementById('gallery');
-      gallery.innerHTML = '';
-      
-      // Fetch images and ratings in parallel
-      const [images, ratings] = await Promise.all([
-        fetchImages(),
-        fetch(SHEET_GET_URL).then(res => res.ok ? res.json() : []).catch(() => [])
-      ]);
-      
-      allImages = images.slice().reverse(); // Newest first
-      allRatings = ratings;
-      modalImages = images; // Keep original order for modal
-      soldDesigns = loadSoldDesigns(); // Load sold designs
-      loadedCount = 0;
-      
-      // Load initial batch
-      await loadImageBatch(0, Math.min(INITIAL_LOAD_COUNT, allImages.length));
-      
-      // Set up intersection observer for lazy loading
-      setupLazyLoading();
-    }
-
-    async function loadImageBatch(startIndex, endIndex) {
-      const gallery = document.getElementById('gallery');
-      const fragment = document.createDocumentFragment();
-      
-      for (let i = startIndex; i < endIndex && i < allImages.length; i++) {
-        const img = allImages[i];
-        const card = createImageCard(img, i);
-        fragment.appendChild(card);
-      }
-      
-      gallery.appendChild(fragment);
-      loadedCount = endIndex;
-      
-      // Preload next batch in background
-      const nextBatchStart = endIndex;
-      const nextBatchEnd = Math.min(endIndex + BATCH_SIZE, allImages.length);
-      if (nextBatchStart < allImages.length) {
-        preloadImages(nextBatchStart, nextBatchEnd);
+    async function loadDesigns() {
+      try {
+        const { data: designs, error } = await supabase
+          .from('design_stats')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (error) {
+          throw error;
+        }
+        
+        return designs || [];
+      } catch (error) {
+        console.error('Error loading designs:', error);
+        return [];
       }
     }
 
-    function createImageCard(img, displayIndex) {
+    function createDesignCard(design) {
       const card = document.createElement('div');
       card.className = 'design-card';
+      card.dataset.designId = design.id;
       
       const image = document.createElement('img');
-      image.src = `designs/${img}`;
-      image.alt = img;
-      image.className = 'design-img';
-      image.loading = 'lazy'; // Enable native lazy loading
+      image.className = 'design-image';
+      image.src = design.image_url;
+      image.alt = design.name;
+      image.loading = 'lazy';
       
-      // Add click to open modal
-      image.onclick = function() {
-        // Find the original index in the non-reversed array for modal
-        const originalIndex = allImages.length - 1 - displayIndex;
-        openModal(originalIndex);
-      };
+      const info = document.createElement('div');
+      info.className = 'design-info';
       
-      // Calculate average rating if available
-      let avgRating = null;
-      const ratingsForImg = allRatings.filter(r => r.design === img && !isNaN(Number(r.rating)));
-      if (ratingsForImg.length > 0) {
-        const arr = ratingsForImg.map(r => Number(r.rating));
-        avgRating = arr.reduce((a, b) => a + b, 0) / arr.length;
-      }
+      const name = document.createElement('div');
+      name.className = 'design-name';
+      name.textContent = design.name;
+      
+      const rating = createStarRating(design.id, design.average_rating || 0);
+      
+      info.appendChild(name);
+      info.appendChild(rating);
       
       card.appendChild(image);
-      card.appendChild(createStarRating(img, avgRating));
+      card.appendChild(info);
       
-      // Add SOLD overlay if design is marked as sold
-      if (soldDesigns.has(img)) {
+      // Add SOLD overlay if design is sold
+      if (design.is_sold) {
         card.classList.add('sold');
         const overlay = document.createElement('div');
         overlay.className = 'sold-overlay';
-        const soldText = document.createElement('div');
-        soldText.className = 'sold-text';
-        soldText.textContent = 'SOLD';
-        overlay.appendChild(soldText);
+        overlay.innerHTML = '<div class="sold-text">SOLD</div>';
         card.appendChild(overlay);
       }
+      
+      // Click to open modal
+      card.addEventListener('click', () => {
+        openModal(design.image_url, design.name);
+      });
       
       return card;
     }
 
-    // Preload images in the background for better performance
-    function preloadImages(startIndex, endIndex) {
-      for (let i = startIndex; i < endIndex && i < allImages.length; i++) {
-        const img = new Image();
-        img.src = `designs/${allImages[i]}`;
-      }
-    }
-
-    function setupLazyLoading() {
-      // Create a sentinel element for intersection observer
-      const sentinel = document.createElement('div');
-      sentinel.style.height = '20px';
-      sentinel.style.width = '100%';
-      sentinel.id = 'loading-sentinel';
-      
-      // Add loading indicator
-      const loadingIndicator = document.createElement('div');
-      loadingIndicator.className = 'loading-indicator';
-      loadingIndicator.innerHTML = '<div class="loading-spinner"></div>Loading more designs...';
-      loadingIndicator.id = 'loading-indicator';
-      loadingIndicator.style.display = 'none';
-      
+    async function renderGallery() {
+      const designs = await loadDesigns();
       const gallery = document.getElementById('gallery');
-      gallery.appendChild(sentinel);
-      gallery.appendChild(loadingIndicator);
       
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting && loadedCount < allImages.length) {
-            // Show loading indicator
-            const loadingIndicator = document.getElementById('loading-indicator');
-            if (loadingIndicator) loadingIndicator.style.display = 'block';
-            
-            // Load next batch
-            const nextBatchStart = loadedCount;
-            const nextBatchEnd = Math.min(loadedCount + BATCH_SIZE, allImages.length);
-            
-            loadImageBatch(nextBatchStart, nextBatchEnd).then(() => {
-              // Hide loading indicator
-              const loadingIndicator = document.getElementById('loading-indicator');
-              if (loadingIndicator) loadingIndicator.style.display = 'none';
-              
-              // Move sentinel to end
-              const gallery = document.getElementById('gallery');
-              const sentinel = document.getElementById('loading-sentinel');
-              if (sentinel) {
-                gallery.appendChild(sentinel);
-              }
-              
-              // If we've loaded all images, disconnect observer
-              if (loadedCount >= allImages.length) {
-                observer.disconnect();
-                const sentinel = document.getElementById('loading-sentinel');
-                const loadingIndicator = document.getElementById('loading-indicator');
-                if (sentinel) sentinel.remove();
-                if (loadingIndicator) loadingIndicator.remove();
-              }
-            });
-          }
-        });
-      }, {
-        rootMargin: '100px' // Start loading 100px before the sentinel is visible
+      if (designs.length === 0) {
+        gallery.innerHTML = `
+          <div class="no-designs">
+            <i class="fas fa-images"></i><br>
+            No designs found. Please upload some designs first.
+          </div>
+        `;
+        return;
+      }
+      
+      gallery.innerHTML = '';
+      designs.forEach(design => {
+        const card = createDesignCard(design);
+        gallery.appendChild(card);
       });
-      
-      observer.observe(sentinel);
     }
 
-    // Modal logic
-    function openModal(index) {
-      modalIndex = index;
-      updateModal();
-      const modal = document.getElementById('modal');
-      modal.style.display = 'flex';
+    // Modal functionality
+    function openModal(imageSrc, imageAlt) {
+      const modal = document.getElementById('imageModal');
+      const modalImg = document.getElementById('modalImage');
+      modal.style.display = 'block';
+      modalImg.src = imageSrc;
+      modalImg.alt = imageAlt;
     }
+
     function closeModal() {
-      const modal = document.getElementById('modal');
+      const modal = document.getElementById('imageModal');
       modal.style.display = 'none';
-      document.getElementById('modalImg').src = '';
-      document.getElementById('modalRating').innerHTML = '';
     }
+
     function updateModal() {
-      const img = modalImages[modalIndex];
-      const modalImg = document.getElementById('modalImg');
-      modalImg.src = `designs/${img}`;
-      // Add rating UI to modal
-      const modalRating = document.getElementById('modalRating');
-      modalRating.innerHTML = '';
-      modalRating.appendChild(createStarRating(img));
+      const modal = document.getElementById('imageModal');
+      modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+          closeModal();
+        }
+      });
     }
-    document.getElementById('modalClose').onclick = closeModal;
-    document.querySelector('#modal .modal-backdrop').onclick = closeModal;
-    document.getElementById('modalArrowLeft').onclick = function(e) {
-      e.stopPropagation();
-      modalIndex = (modalIndex - 1 + modalImages.length) % modalImages.length;
-      updateModal();
-    };
-    document.getElementById('modalArrowRight').onclick = function(e) {
-      e.stopPropagation();
-      modalIndex = (modalIndex + 1) % modalImages.length;
-      updateModal();
-    };
-    document.addEventListener('keydown', function(e) {
-      const modal = document.getElementById('modal');
-      if (modal.style.display === 'flex') {
-        if (e.key === 'Escape') closeModal();
-        if (e.key === 'ArrowLeft') {
-          modalIndex = (modalIndex - 1 + modalImages.length) % modalImages.length;
-          updateModal();
-        }
-        if (e.key === 'ArrowRight') {
-          modalIndex = (modalIndex + 1) % modalImages.length;
-          updateModal();
-        }
+
+    // Initialize
+    async function init() {
+      await loadSupabaseConfig();
+      if (SUPABASE_URL && SUPABASE_ANON_KEY) {
+        await initializeSupabase();
+        await renderGallery();
+        updateModal();
+      }
+    }
+
+    // Close modal with X button
+    document.addEventListener('DOMContentLoaded', () => {
+      const closeBtn = document.querySelector('.close');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', closeModal);
       }
     });
-    // Touch/swipe support for mobile
-    let touchStartX = null;
-    document.getElementById('modal').addEventListener('touchstart', function(e) {
-      if (e.touches.length === 1) {
-        touchStartX = e.touches[0].clientX;
-      }
-    });
-    document.getElementById('modal').addEventListener('touchend', function(e) {
-      if (touchStartX !== null && e.changedTouches.length === 1) {
-        const dx = e.changedTouches[0].clientX - touchStartX;
-        if (Math.abs(dx) > 50) {
-          if (dx > 0) {
-            // Swipe right
-            modalIndex = (modalIndex - 1 + modalImages.length) % modalImages.length;
-            updateModal();
-          } else {
-            // Swipe left
-            modalIndex = (modalIndex + 1) % modalImages.length;
-            updateModal();
-          }
-        }
-      }
-      touchStartX = null;
-    });
-    renderGallery();
+
+    init();
   </script>
 </body>
-</html> 
+</html>
