@@ -750,6 +750,17 @@
         deleteButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
         
         try {
+          // First, delete the file from Supabase storage
+          const { error: storageError } = await supabase.storage
+            .from('designs')
+            .remove([design.filename]);
+          
+          if (storageError) {
+            console.error('Error deleting file from storage:', storageError);
+            // Continue with database deletion even if storage deletion fails
+          }
+          
+          // Then delete the design record from the database
           const { error } = await supabase
             .from('designs')
             .delete()
