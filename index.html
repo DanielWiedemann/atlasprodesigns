@@ -64,6 +64,37 @@
       object-fit: contain;
       display: block;
       background: #f8f9fa;
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      -webkit-user-drag: none;
+      -khtml-user-drag: none;
+      -moz-user-drag: none;
+      -o-user-drag: none;
+      user-drag: none;
+      pointer-events: none;
+    }
+    .image-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: transparent;
+      pointer-events: none;
+      z-index: 5;
+    }
+    .watermark {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 0.8rem;
+      font-weight: bold;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+      pointer-events: none;
+      z-index: 6;
     }
     .design-info {
       padding: 20px;
@@ -405,6 +436,18 @@
       card.appendChild(image);
       card.appendChild(info);
       
+      // Add image protection overlay
+      const overlay = document.createElement('div');
+      overlay.className = 'image-overlay';
+      
+      // Add watermark
+      const watermark = document.createElement('div');
+      watermark.className = 'watermark';
+      watermark.textContent = 'Atlas Pro Designs';
+      overlay.appendChild(watermark);
+      
+      card.appendChild(overlay);
+      
       // Add SOLD overlay if design is sold
       if (design.is_sold) {
         card.classList.add('sold');
@@ -444,7 +487,45 @@
       if (SUPABASE_URL && SUPABASE_ANON_KEY) {
         await initializeSupabase();
         await renderGallery();
+        setupImageProtection();
       }
+    }
+
+    function setupImageProtection() {
+      // Prevent right-click context menu on images
+      document.addEventListener('contextmenu', function(e) {
+        if (e.target.classList.contains('design-image')) {
+          e.preventDefault();
+          return false;
+        }
+      });
+
+      // Prevent drag and drop of images
+      document.addEventListener('dragstart', function(e) {
+        if (e.target.classList.contains('design-image')) {
+          e.preventDefault();
+          return false;
+        }
+      });
+
+      // Prevent keyboard shortcuts for saving images
+      document.addEventListener('keydown', function(e) {
+        // Prevent Ctrl+S, Ctrl+Shift+S, F12, Ctrl+U, Ctrl+Shift+I
+        if ((e.ctrlKey && (e.key === 's' || e.key === 'u' || e.key === 'i')) || 
+            (e.ctrlKey && e.shiftKey && (e.key === 's' || e.key === 'i')) ||
+            e.key === 'F12') {
+          e.preventDefault();
+          return false;
+        }
+      });
+
+      // Prevent image loading in new tabs
+      document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('design-image')) {
+          e.preventDefault();
+          return false;
+        }
+      });
     }
 
     init();
