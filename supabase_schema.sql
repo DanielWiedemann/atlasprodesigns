@@ -1,10 +1,11 @@
 -- Create the designs table
 CREATE TABLE designs (
-  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   filename TEXT NOT NULL UNIQUE,
   name TEXT NOT NULL,
-  image_url TEXT NOT NULL,
+  image_url TEXT,
   is_sold BOOLEAN DEFAULT FALSE,
+  tags JSONB DEFAULT '[]'::jsonb,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -23,6 +24,7 @@ CREATE TABLE ratings (
 CREATE INDEX idx_designs_filename ON designs(filename);
 CREATE INDEX idx_designs_sold ON designs(is_sold);
 CREATE INDEX idx_designs_created_at ON designs(created_at DESC);
+CREATE INDEX idx_designs_tags ON designs USING GIN (tags);
 CREATE INDEX idx_ratings_design_id ON ratings(design_id);
 CREATE INDEX idx_ratings_visitor_id ON ratings(visitor_id);
 
@@ -41,6 +43,48 @@ RETURNS BOOLEAN AS $$
 BEGIN
     DELETE FROM designs WHERE id = design_id;
     RETURN FOUND;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to add a tag to a design
+CREATE OR REPLACE FUNCTION add_design_tag(design_id UUID, tag TEXT)
+RETURNS BOOLEAN AS $$
+BEGIN
+    UPDATE designs 
+    SET tags = tags || jsonb_build_array(tag)
+    WHERE id = design_id AND NOT (tags @> jsonb_build_array(tag));
+    RETURN FOUND;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to remove a tag from a design
+CREATE OR REPLACE FUNCTION remove_design_tag(design_id UUID, tag TEXT)
+RETURNS BOOLEAN AS $$
+BEGIN
+    UPDATE designs 
+    SET tags = tags - tag
+    WHERE id = design_id;
+    RETURN FOUND;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Function to search designs by tags
+CREATE OR REPLACE FUNCTION search_designs_by_tags(tag_array TEXT[])
+RETURNS TABLE(
+    id UUID,
+    filename TEXT,
+    name TEXT,
+    image_url TEXT,
+    is_sold BOOLEAN,
+    tags JSONB,
+    created_at TIMESTAMP WITH TIME ZONE
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT d.id, d.filename, d.name, d.image_url, d.is_sold, d.tags, d.created_at
+    FROM designs d
+    WHERE d.tags ?| tag_array
+    ORDER BY d.created_at DESC;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 

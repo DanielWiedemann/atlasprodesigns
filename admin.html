@@ -446,55 +446,62 @@
   <div class="admin-container">
     <div class="admin-header">
       <h2>Design Management</h2>
-      <p>Manage design availability and view ratings. Changes are saved automatically.</p>
+      <p>Upload new designs, manage existing ones, and view statistics</p>
       
-      <!-- Bulk Upload Section -->
-      <div class="upload-section">
-        <h3>Bulk Upload Designs</h3>
-        <p>Upload multiple design files to add them to the database.</p>
-        
-        <div class="file-upload-area" id="fileUploadArea">
-          <div class="upload-content">
-            <i class="fas fa-cloud-upload-alt"></i>
-            <p>Drag & drop files here or click to browse</p>
-            <p class="upload-hint">Supports .webp, .png, .jpg, .jpeg files</p>
-          </div>
-          <input type="file" id="fileInput" multiple accept=".webp,.png,.jpg,.jpeg" style="display: none;">
+      <div style="margin-top: 20px;">
+        <button onclick="cleanupOrphanedFiles()" style="background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-right: 10px;">
+          <i class="fas fa-broom"></i> Cleanup Orphaned Files
+        </button>
+        <small style="color: #666;">Removes files from storage that don't exist in database</small>
+      </div>
+    </div>
+    
+    <!-- Bulk Upload Section -->
+    <div class="upload-section">
+      <h3>Bulk Upload Designs</h3>
+      <p>Upload multiple design files to add them to the database.</p>
+      
+      <div class="file-upload-area" id="fileUploadArea">
+        <div class="upload-content">
+          <i class="fas fa-cloud-upload-alt"></i>
+          <p>Drag & drop files here or click to browse</p>
+          <p class="upload-hint">Supports .webp, .png, .jpg, .jpeg files</p>
         </div>
-        
-        <div class="selected-files" id="selectedFiles" style="display: none;">
-          <h4>Selected Files (<span id="fileCount">0</span>)</h4>
-          <div id="fileList"></div>
-          <button class="upload-button" id="uploadButton" disabled>
-            <i class="fas fa-upload"></i> Upload to Supabase
-          </button>
-        </div>
-        
-        <div class="upload-progress" id="uploadProgress" style="display: none;">
-          <div class="progress-bar">
-            <div class="progress-fill" id="progressFill"></div>
-          </div>
-          <div class="progress-text" id="progressText">Uploading...</div>
-        </div>
+        <input type="file" id="fileInput" multiple accept=".webp,.png,.jpg,.jpeg" style="display: none;">
       </div>
       
-      <div class="stats">
-        <div class="stat-card">
-          <div class="stat-number" id="totalDesigns">0</div>
-          <div class="stat-label">Total Designs</div>
+      <div class="selected-files" id="selectedFiles" style="display: none;">
+        <h4>Selected Files (<span id="fileCount">0</span>)</h4>
+        <div id="fileList"></div>
+        <button class="upload-button" id="uploadButton" disabled>
+          <i class="fas fa-upload"></i> Upload to Supabase
+        </button>
+      </div>
+      
+      <div class="upload-progress" id="uploadProgress" style="display: none;">
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill"></div>
         </div>
-        <div class="stat-card">
-          <div class="stat-number" id="availableDesigns">0</div>
-          <div class="stat-label">Available</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number" id="soldDesigns">0</div>
-          <div class="stat-label">Sold</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-number" id="totalRatings">0</div>
-          <div class="stat-label">Total Ratings</div>
-        </div>
+        <div class="progress-text" id="progressText">Uploading...</div>
+      </div>
+    </div>
+    
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-number" id="totalDesigns">0</div>
+        <div class="stat-label">Total Designs</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="availableDesigns">0</div>
+        <div class="stat-label">Available</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="soldDesigns">0</div>
+        <div class="stat-label">Sold</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number" id="averageRating">0.0</div>
+        <div class="stat-label">Avg Rating</div>
       </div>
     </div>
     
@@ -679,15 +686,67 @@
     }
 
     function updateStats() {
-      const total = designs.length;
-      const sold = designs.filter(d => d.is_sold).length;
-      const available = total - sold;
-      const totalRatings = designs.reduce((sum, d) => sum + (d.total_ratings || 0), 0);
+      const totalDesigns = designs.length;
+      const soldDesigns = designs.filter(d => d.is_sold).length;
+      const availableDesigns = totalDesigns - soldDesigns;
+      const averageRating = designs.reduce((sum, d) => sum + (d.average_rating || 0), 0) / totalDesigns || 0;
       
-      document.getElementById('totalDesigns').textContent = total;
-      document.getElementById('availableDesigns').textContent = available;
-      document.getElementById('soldDesigns').textContent = sold;
-      document.getElementById('totalRatings').textContent = totalRatings;
+      document.getElementById('totalDesigns').textContent = totalDesigns;
+      document.getElementById('soldDesigns').textContent = soldDesigns;
+      document.getElementById('availableDesigns').textContent = availableDesigns;
+      document.getElementById('averageRating').textContent = averageRating.toFixed(1);
+    }
+
+    async function cleanupOrphanedFiles() {
+      try {
+        console.log('Starting cleanup of orphaned files...');
+        
+        // Get all files in storage
+        const { data: storageFiles, error: storageError } = await supabase.storage
+          .from('designs')
+          .list('', { limit: 1000 });
+        
+        if (storageError) {
+          console.error('Error listing storage files:', storageError);
+          return;
+        }
+        
+        // Get all filenames from database
+        const { data: dbDesigns, error: dbError } = await supabase
+          .from('designs')
+          .select('filename');
+        
+        if (dbError) {
+          console.error('Error getting database designs:', dbError);
+          return;
+        }
+        
+        const dbFilenames = dbDesigns.map(d => d.filename);
+        const orphanedFiles = storageFiles.filter(file => !dbFilenames.includes(file.name));
+        
+        console.log(`Found ${orphanedFiles.length} orphaned files:`, orphanedFiles.map(f => f.name));
+        
+        if (orphanedFiles.length > 0) {
+          const filenamesToDelete = orphanedFiles.map(f => f.name);
+          const { error: deleteError } = await supabase.storage
+            .from('designs')
+            .remove(filenamesToDelete);
+          
+          if (deleteError) {
+            console.error('Error deleting orphaned files:', deleteError);
+          } else {
+            console.log(`Successfully deleted ${orphanedFiles.length} orphaned files`);
+            alert(`Cleaned up ${orphanedFiles.length} orphaned files from storage.`);
+          }
+        } else {
+          console.log('No orphaned files found');
+          alert('No orphaned files found in storage.');
+        }
+        
+      } catch (error) {
+        console.error('Error during cleanup:', error);
+        alert('Error during cleanup. Check console for details.');
+      }
     }
 
     function filterDesigns() {
@@ -1194,7 +1253,52 @@
     
     async function uploadDesignToSupabase(design, supabaseUrl, supabaseKey, imageUrlPrefix) {
       try {
-        // First upload the file to Supabase storage
+        // First check if file already exists in storage and delete it
+        console.log('Checking if file exists in storage:', design.filename);
+        const { data: existingFiles, error: listError } = await supabase.storage
+          .from('designs')
+          .list('', { limit: 1000 });
+        
+        if (!listError && existingFiles) {
+          const existingFile = existingFiles.find(file => file.name === design.filename);
+          if (existingFile) {
+            console.log('File exists in storage, deleting it first:', design.filename);
+            const { error: deleteError } = await supabase.storage
+              .from('designs')
+              .remove([design.filename]);
+            
+            if (deleteError) {
+              console.error('Error deleting existing file:', deleteError);
+              // Continue anyway, might still work
+            } else {
+              console.log('Successfully deleted existing file');
+            }
+          }
+        }
+        
+        // Check if design already exists in database
+        const { data: existingDesign, error: checkError } = await supabase
+          .from('designs')
+          .select('id')
+          .eq('filename', design.filename)
+          .single();
+        
+        if (!checkError && existingDesign) {
+          console.log('Design exists in database, deleting it first:', design.filename);
+          const { error: deleteDbError } = await supabase
+            .from('designs')
+            .delete()
+            .eq('filename', design.filename);
+          
+          if (deleteDbError) {
+            console.error('Error deleting existing design from database:', deleteDbError);
+          } else {
+            console.log('Successfully deleted existing design from database');
+          }
+        }
+        
+        // Now upload the file to Supabase storage
+        console.log('Uploading file to storage:', design.filename);
         const { data: fileData, error: fileError } = await supabase.storage
           .from('designs')
           .upload(design.filename, design.file);
@@ -1203,12 +1307,15 @@
           throw fileError;
         }
         
+        console.log('File uploaded successfully to storage');
+        
         // Get the public URL for the uploaded file
         const { data: urlData } = supabase.storage
           .from('designs')
           .getPublicUrl(design.filename);
         
         // Then insert the design record with the storage URL
+        console.log('Inserting design record into database');
         const { data, error } = await supabase
           .from('designs')
           .insert({
@@ -1221,6 +1328,7 @@
           throw error;
         }
         
+        console.log('Design record inserted successfully');
         return { success: true, data };
       } catch (error) {
         console.error('Error uploading design:', error);
