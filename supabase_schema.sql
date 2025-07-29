@@ -101,3 +101,19 @@ CREATE POLICY "Admin can manage designs" ON designs
 
 CREATE POLICY "Admin can manage ratings" ON ratings
   FOR ALL USING (auth.role() = 'admin');
+
+-- Create storage bucket for design images
+INSERT INTO storage.buckets (id, name, public) VALUES ('designs', 'designs', true);
+
+-- Create storage policies for public access to design images
+CREATE POLICY "Public can view design images" ON storage.objects
+  FOR SELECT USING (bucket_id = 'designs');
+
+CREATE POLICY "Public can upload design images" ON storage.objects
+  FOR INSERT WITH CHECK (bucket_id = 'designs');
+
+CREATE POLICY "Public can update design images" ON storage.objects
+  FOR UPDATE USING (bucket_id = 'designs');
+
+CREATE POLICY "Public can delete design images" ON storage.objects
+  FOR DELETE USING (bucket_id = 'designs');

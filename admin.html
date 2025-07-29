@@ -1000,12 +1000,27 @@
     
     async function uploadDesignToSupabase(design, supabaseUrl, supabaseKey, imageUrlPrefix) {
       try {
+        // First upload the file to Supabase storage
+        const { data: fileData, error: fileError } = await supabase.storage
+          .from('designs')
+          .upload(design.filename, design.file);
+        
+        if (fileError) {
+          throw fileError;
+        }
+        
+        // Get the public URL for the uploaded file
+        const { data: urlData } = supabase.storage
+          .from('designs')
+          .getPublicUrl(design.filename);
+        
+        // Then insert the design record with the storage URL
         const { data, error } = await supabase
           .from('designs')
           .insert({
             filename: design.filename,
             name: design.name,
-            image_url: design.image_url
+            image_url: urlData.publicUrl
           });
         
         if (error) {
@@ -1052,7 +1067,7 @@
           const result = await uploadDesignToSupabase({
             filename: file.name,
             name: designName,
-            image_url: imageUrl
+            file: file
           }, SUPABASE_URL, SUPABASE_ANON_KEY, 'designs/');
           
           if (result.success) {
