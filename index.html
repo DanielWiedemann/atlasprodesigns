@@ -41,6 +41,7 @@
       padding: 0 20px;
     }
     .design-card {
+      position: relative;
       background: #fff;
       border-radius: 16px;
       box-shadow: 0 4px 24px rgba(0,0,0,0.07);
@@ -49,6 +50,36 @@
       flex-direction: column;
       align-items: center;
       transition: box-shadow 0.2s;
+    }
+    .design-card.sold {
+      opacity: 0.8;
+    }
+    .sold-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(45deg, transparent 30%, rgba(231, 76, 60, 0.9) 30%, rgba(231, 76, 60, 0.9) 70%, transparent 70%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      z-index: 2;
+      pointer-events: none;
+    }
+    .sold-text {
+      color: white;
+      font-weight: bold;
+      font-size: 1.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+      transform: rotate(-45deg);
+      background: rgba(231, 76, 60, 0.9);
+      padding: 8px 16px;
+      border-radius: 8px;
+      border: 2px solid white;
     }
     .design-card:hover {
       box-shadow: 0 8px 32px rgba(0,0,0,0.12);
@@ -288,6 +319,9 @@
 <body>
   <div class="atlas-logo"><img src="logo.png" alt="Atlas Pro Logo" /></div>
   <h1>Designs Gallery</h1>
+  <a href="admin.html" style="position: fixed; top: 20px; right: 20px; background: #3498db; color: white; padding: 8px 12px; border-radius: 6px; text-decoration: none; font-size: 0.8rem; font-weight: bold; z-index: 1000; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    <i class="fas fa-cog"></i> Admin
+  </a>
   <div class="gallery" id="gallery">
     <!-- Images will be loaded here by JavaScript -->
   </div>
@@ -303,7 +337,7 @@
       </div>
     </div>
   </div>
-  <div id="version-badge" style="position:fixed;bottom:10px;right:10px;z-index:999;background:#e0e0e0;color:#fff;padding:2px 8px;border-radius:6px;font-size:0.85em;font-family:monospace;box-shadow:0 1px 4px rgba(0,0,0,0.04);opacity:0.7;">v1.0.13</div>
+  <div id="version-badge" style="position:fixed;bottom:10px;right:10px;z-index:999;background:#e0e0e0;color:#fff;padding:2px 8px;border-radius:6px;font-size:0.85em;font-family:monospace;box-shadow:0 1px 4px rgba(0,0,0,0.04);opacity:0.7;">v1.0.14</div>
   <script>
     async function fetchImages() {
       const res = await fetch('designs/designs.json');
@@ -371,8 +405,14 @@
     let allImages = [];
     let allRatings = [];
     let loadedCount = 0;
+    let soldDesigns = new Set();
     const INITIAL_LOAD_COUNT = 12; // Load first 12 images immediately
     const BATCH_SIZE = 6; // Load 6 more images at a time
+
+    function loadSoldDesigns() {
+      const saved = localStorage.getItem('sold_designs');
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    }
 
     async function renderGallery() {
       const gallery = document.getElementById('gallery');
@@ -387,6 +427,7 @@
       allImages = images.slice().reverse(); // Newest first
       allRatings = ratings;
       modalImages = images; // Keep original order for modal
+      soldDesigns = loadSoldDesigns(); // Load sold designs
       loadedCount = 0;
       
       // Load initial batch
@@ -444,6 +485,18 @@
       
       card.appendChild(image);
       card.appendChild(createStarRating(img, avgRating));
+      
+      // Add SOLD overlay if design is marked as sold
+      if (soldDesigns.has(img)) {
+        card.classList.add('sold');
+        const overlay = document.createElement('div');
+        overlay.className = 'sold-overlay';
+        const soldText = document.createElement('div');
+        soldText.className = 'sold-text';
+        soldText.textContent = 'SOLD';
+        overlay.appendChild(soldText);
+        card.appendChild(overlay);
+      }
       
       return card;
     }
