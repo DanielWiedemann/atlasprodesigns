@@ -791,6 +791,11 @@
 
   <!-- Notification Container -->
   <div id="notificationContainer"></div>
+  
+  <!-- Jump to Top Button -->
+  <button id="jumpToTop" style="position:fixed;bottom:20px;right:20px;z-index:1000;background:rgba(52,152,219,0.8);color:white;border:none;border-radius:50%;width:40px;height:40px;cursor:pointer;font-size:18px;display:none;transition:all 0.3s ease;box-shadow:0 2px 8px rgba(0,0,0,0.2);" onclick="scrollToTop()">
+    ↑
+  </button>
 
   <!-- Bulk Tag Modal -->
   <div id="bulkTagModal" class="bulk-tag-modal">
@@ -2342,6 +2347,29 @@
       // Re-render all design cards to show updated tags and selection state
       filterDesigns();
     }
+
+    // Jump to Top functionality
+    function scrollToTop() {
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+      });
+    }
+
+    function setupScrollToTop() {
+      const jumpToTopBtn = document.getElementById('jumpToTop');
+      
+      window.addEventListener('scroll', function() {
+        if (window.pageYOffset > 300) {
+          jumpToTopBtn.style.display = 'block';
+        } else {
+          jumpToTopBtn.style.display = 'none';
+        }
+      });
+    }
+
+    // Initialize scroll to top functionality
+    setupScrollToTop();
   </script>
 </body>
 </html>
