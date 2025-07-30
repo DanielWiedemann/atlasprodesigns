@@ -538,7 +538,8 @@
         flex-direction: column;
       }
       .tag-sidebar {
-        width: 100%;
+        width: 100vw;
+        margin-left: calc(-50vw + 50%);
         order: -1;
         margin-bottom: 0;
         padding: 4px 8px;
@@ -600,9 +601,7 @@
         margin-bottom: 6px;
       }
       .existing-tags-header h4 {
-        margin: 0;
-        font-size: 12px;
-        white-space: nowrap;
+        display: none;
       }
       .existing-tags-header .tags-list {
         display: flex;
@@ -653,7 +652,7 @@
     <i class="fas fa-arrow-left"></i> Back to Gallery
   </a>
   
-  <div class="atlas-logo"><img src="logo.png" alt="Atlas Pro Logo" /></div>
+  <div class="atlas-logo"><a href="index.html"><img src="logo.png" alt="Atlas Pro Logo" /></a></div>
   <h1>Admin Panel</h1>
   
   <div class="admin-container">
