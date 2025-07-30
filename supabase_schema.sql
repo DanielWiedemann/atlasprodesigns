@@ -102,6 +102,7 @@ SELECT
   d.name,
   d.image_url,
   d.is_sold,
+  d.tags,
   d.created_at,
   COUNT(r.id) as total_ratings,
   AVG(r.rating) as average_rating,
@@ -109,7 +110,7 @@ SELECT
   MAX(r.rating) as max_rating
 FROM designs d
 LEFT JOIN ratings r ON d.id = r.design_id
-GROUP BY d.id, d.filename, d.name, d.image_url, d.is_sold, d.created_at
+GROUP BY d.id, d.filename, d.name, d.image_url, d.is_sold, d.tags, d.created_at
 ORDER BY d.created_at DESC;
 
 -- Enable Row Level Security (RLS)

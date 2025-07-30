@@ -1251,13 +1251,30 @@
 
     async function loadDesigns() {
       try {
+        // First try to load from design_stats view with tags
         const { data, error } = await supabase
           .from('design_stats')
           .select('*, tags')
           .order('created_at', { ascending: false });
         
         if (error) {
-          throw error;
+          console.log('design_stats view error, trying direct designs table:', error);
+          // Fallback to direct designs table if view fails
+          const { data: directData, error: directError } = await supabase
+            .from('designs')
+            .select('*, total_ratings:ratings(count), average_rating:ratings(avg)')
+            .order('created_at', { ascending: false });
+          
+          if (directError) {
+            throw directError;
+          }
+          
+          // Transform the data to match expected format
+          return directData.map(design => ({
+            ...design,
+            total_ratings: design.total_ratings?.[0]?.count || 0,
+            average_rating: design.average_rating?.[0]?.avg || null
+          })) || [];
         }
         
         return data || [];
@@ -1275,7 +1292,9 @@
       grid.innerHTML = '';
       
       try {
+        console.log('Loading designs...');
         designs = await loadDesigns();
+        console.log('Designs loaded:', designs.length);
         
         if (designs.length === 0) {
           grid.innerHTML = '<div style="text-align: center; color: #666; padding: 40px;">No designs found. Please upload some designs first.</div>';
@@ -1286,11 +1305,16 @@
         filterDesigns();
         
         // Load tags after designs are loaded
+        console.log('Loading tags...');
         loadAllTags();
+        console.log('Tags loaded:', allTags.size);
         
       } catch (error) {
         console.error('Error loading designs:', error);
-        grid.innerHTML = '<div style="text-align: center; color: #666; padding: 40px;">Error loading designs. Please check your Supabase configuration.</div>';
+        grid.innerHTML = `<div style="text-align: center; color: #666; padding: 40px;">
+          Error loading designs. Please check your Supabase configuration.<br>
+          <small style="color: #999;">Error: ${error.message}</small>
+        </div>`;
       } finally {
         loading.style.display = 'none';
       }
