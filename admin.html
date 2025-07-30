@@ -540,58 +540,50 @@
       .tag-sidebar {
         width: 100%;
         order: -1;
-        margin-bottom: 10px;
-        padding: 10px;
-        max-height: 250px;
-        overflow-y: auto;
+        margin-bottom: 8px;
+        padding: 8px;
+        max-height: none;
+        overflow-y: visible;
       }
       .tag-sidebar h3 {
-        font-size: 0.9rem;
-        margin-bottom: 8px;
+        font-size: 0.8rem;
+        margin-bottom: 6px;
       }
       .tag-input {
         width: 100% !important;
-        margin-bottom: 6px;
-        padding: 6px;
-        font-size: 13px;
+        margin-bottom: 4px;
+        padding: 4px 6px;
+        font-size: 12px;
       }
       .tag-sidebar button {
-        padding: 4px 8px;
-        font-size: 11px;
+        padding: 3px 6px;
+        font-size: 10px;
         margin: 1px;
       }
       .tag-sidebar .button-group {
         display: flex;
         flex-wrap: wrap;
-        gap: 3px;
-        margin-bottom: 8px;
+        gap: 2px;
+        margin-bottom: 6px;
       }
       .tags-list {
-        max-height: 100px;
-        margin-bottom: 8px;
+        max-height: 80px;
+        margin-bottom: 6px;
       }
       .tag-item {
-        padding: 3px 6px;
-        font-size: 11px;
+        padding: 2px 4px;
+        font-size: 10px;
         margin: 1px;
       }
       .bulk-delete-section {
-        padding: 8px 0;
-        margin-top: 8px;
-      }
-      .bulk-delete-section h4 {
-        font-size: 0.8rem;
-        margin-bottom: 6px;
-      }
-      .bulk-delete-section p {
-        font-size: 11px;
-        margin-bottom: 8px;
+        padding: 4px 0;
+        margin-top: 4px;
       }
       .bulk-delete-section button {
-        padding: 6px 10px;
-        font-size: 11px;
+        padding: 4px 8px;
+        font-size: 10px;
         width: auto;
-        min-width: 120px;
+        min-width: 80px;
       }
       .designs-grid {
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -716,7 +708,6 @@
           <input type="text" id="tagInput" placeholder="Enter tag name..." style="width: 80%; padding: 8px 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; margin-bottom: 10px;">
           <div class="button-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
             <button id="addTagBtn" style="background: #3498db; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">Create Tag</button>
-            <button id="bulkTagBtn" style="background: #27ae60; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">Bulk Tag</button>
             <button id="removeAllTagsBtn" style="background: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">Remove All Tags</button>
             <button id="clearSelectionBtn" style="background: #95a5a6; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">Clear</button>
           </div>
@@ -734,10 +725,8 @@
         </div>
         
         <!-- Bulk Delete Section -->
-        <div class="bulk-delete-section" style="margin-top: 30px; padding-top: 20px; border-top: 2px solid #eee;">
-          <h4 style="margin-top: 0; margin-bottom: 15px;">Bulk Delete</h4>
-          <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Delete all selected designs permanently. This action cannot be undone.</p>
-          <button id="bulkDeleteBtn" style="background: #e74c3c; color: white; border: none; padding: 12px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; width: 100%;">Delete Selected</button>
+        <div class="bulk-delete-section" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
+          <button id="bulkDeleteBtn" style="background: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; width: 100%;">Delete Selected</button>
         </div>
       </div>
     </div>
@@ -1825,7 +1814,7 @@
       document.getElementById('addTagBtn').addEventListener('click', createNewTag);
       
       // Bulk tag button
-      document.getElementById('bulkTagBtn').addEventListener('click', openBulkTagModal);
+
       
       // Remove all tags button
       document.getElementById('removeAllTagsBtn').addEventListener('click', removeAllTagsFromSelected);
