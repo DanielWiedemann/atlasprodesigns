@@ -610,6 +610,26 @@
         margin: 0;
         max-height: none;
       }
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+      }
+      .stat-card {
+        padding: 10px;
+      }
+      .stat-number {
+        font-size: 1.2rem;
+      }
+      .stat-label {
+        font-size: 0.7rem;
+      }
+      .filters {
+        gap: 8px;
+      }
+      .filter-btn {
+        padding: 6px 10px;
+        font-size: 0.7rem;
+      }
       .designs-grid {
         grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
         gap: 16px;
@@ -652,7 +672,7 @@
     <i class="fas fa-arrow-left"></i> Back to Gallery
   </a>
   
-  <div class="atlas-logo" style="text-align: center;"><a href="index.html"><img src="logo.png" alt="Atlas Pro Logo" /></a></div>
+  <div class="atlas-logo" style="text-align: center; margin: 0 auto;"><a href="index.html"><img src="logo.png" alt="Atlas Pro Logo" /></a></div>
   <h1>Admin Panel</h1>
   
   <div class="admin-container">
@@ -734,12 +754,13 @@
             <input type="text" id="tagInput" placeholder="Enter tag name..." style="flex: 1; padding: 8px 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
             <button id="toggleTagManagement" style="background: #95a5a6; color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 16px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">▲</button>
           </div>
-          <div id="tagManagementContent" style="display: block;">
-            <div class="button-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
-              <button id="addTagBtn" style="background: #3498db; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">Create Tag</button>
-              <button id="removeAllTagsBtn" style="background: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">Remove All Tags</button>
-              <button id="clearSelectionBtn" style="background: #95a5a6; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">Clear</button>
-            </div>
+        </div>
+        
+        <div id="tagManagementContent" style="display: block;">
+          <div class="button-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <button id="addTagBtn" style="background: #3498db; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">Create Tag</button>
+            <button id="removeAllTagsBtn" style="background: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">Remove All Tags</button>
+            <button id="clearSelectionBtn" style="background: #95a5a6; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">Clear</button>
           </div>
           
           <!-- Selected Designs Counter -->
