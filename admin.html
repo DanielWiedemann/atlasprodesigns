@@ -730,30 +730,35 @@
         
         <!-- Tag Input and Add -->
         <div style="margin-bottom: 15px;">
-          <input type="text" id="tagInput" placeholder="Enter tag name..." style="width: 80%; padding: 8px 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; margin-bottom: 10px;margin-top: 5px;">
-          <div class="button-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button id="addTagBtn" style="background: #3498db; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">Create Tag</button>
-            <button id="removeAllTagsBtn" style="background: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">Remove All Tags</button>
-            <button id="clearSelectionBtn" style="background: #95a5a6; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">Clear</button>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <input type="text" id="tagInput" placeholder="Enter tag name..." style="flex: 1; padding: 8px 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
+            <button id="toggleTagManagement" style="background: #95a5a6; color: white; border: none; padding: 8px; border-radius: 6px; cursor: pointer; font-size: 16px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">▲</button>
           </div>
-        </div>
-        
-        <!-- Selected Designs Counter -->
-        <div id="selectionInfo" style="background: #e8f4fd; padding: 10px; border-radius: 6px; margin-bottom: 15px; display: none;">
-          <strong id="selectedCount">0</strong> designs selected
-        </div>
-        
-        <!-- Existing Tags Display -->
-        <div id="existingTags">
-          <div class="existing-tags-header">
-            <h4 style="margin: 0; font-size: 14px;">Existing Tags:</h4>
-            <div id="tagsList" class="tags-list" style="display: flex; flex-wrap: wrap; gap: 6px; max-height: 200px; overflow-y: auto;"></div>
+          <div id="tagManagementContent" style="display: block;">
+            <div class="button-group" style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button id="addTagBtn" style="background: #3498db; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">Create Tag</button>
+              <button id="removeAllTagsBtn" style="background: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">Remove All Tags</button>
+              <button id="clearSelectionBtn" style="background: #95a5a6; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">Clear</button>
+            </div>
           </div>
-        </div>
-        
-        <!-- Bulk Delete Section -->
-        <div class="bulk-delete-section" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
-          <button id="bulkDeleteBtn" style="background: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; width: 90%;">Delete Selected</button>
+          
+          <!-- Selected Designs Counter -->
+          <div id="selectionInfo" style="background: #e8f4fd; padding: 10px; border-radius: 6px; margin-bottom: 15px; display: none;">
+            <strong id="selectedCount">0</strong> designs selected
+          </div>
+          
+          <!-- Existing Tags Display -->
+          <div id="existingTags">
+            <div class="existing-tags-header">
+              <h4 style="margin: 0; font-size: 14px;">Existing Tags:</h4>
+              <div id="tagsList" class="tags-list" style="display: flex; flex-wrap: wrap; gap: 6px; max-height: 200px; overflow-y: auto;"></div>
+            </div>
+          </div>
+          
+          <!-- Bulk Delete Section -->
+          <div class="bulk-delete-section" style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #eee;">
+            <button id="bulkDeleteBtn" style="background: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px; width: 90%;">Delete Selected</button>
+          </div>
         </div>
       </div>
     </div>
@@ -1840,8 +1845,8 @@
       // Create tag button
       document.getElementById('addTagBtn').addEventListener('click', createNewTag);
       
-      // Bulk tag button
-
+      // Toggle tag management
+      document.getElementById('toggleTagManagement').addEventListener('click', toggleTagManagement);
       
       // Remove all tags button
       document.getElementById('removeAllTagsBtn').addEventListener('click', removeAllTagsFromSelected);
@@ -1870,6 +1875,19 @@
           addDefaultTags();
         }
       }, 2000);
+    }
+    
+    function toggleTagManagement() {
+      const content = document.getElementById('tagManagementContent');
+      const toggleBtn = document.getElementById('toggleTagManagement');
+      
+      if (content.style.display === 'none') {
+        content.style.display = 'block';
+        toggleBtn.textContent = '▲';
+      } else {
+        content.style.display = 'none';
+        toggleBtn.textContent = '▼';
+      }
     }
     
     function addDefaultTags() {
