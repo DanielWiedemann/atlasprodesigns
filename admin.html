@@ -15,13 +15,15 @@
       margin: 0;
       padding: 0;
     }
-    .atlas-logo {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-top: 32px;
-      margin-bottom: 0;
-    }
+          .atlas-logo {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-top: 32px;
+        margin-bottom: 0;
+        text-align: center;
+        width: 100%;
+      }
     .atlas-logo img {
       width: 380px;
       max-width: 90%;
@@ -538,7 +540,8 @@
         flex-direction: column;
       }
       .tag-sidebar {
-        width: 100%;
+        width: 100vw;
+        margin-left: calc(-50vw + 50%);
         order: -1;
         margin-bottom: 0;
         padding: 8px;
