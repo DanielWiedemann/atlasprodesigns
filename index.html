@@ -520,7 +520,10 @@
         const tagElement = document.createElement('div');
         tagElement.className = 'filter-tag';
         tagElement.textContent = tag;
-        tagElement.onclick = () => toggleFilterTag(tag);
+        tagElement.onclick = (e) => {
+          e.stopPropagation();
+          toggleFilterTag(tag);
+        };
         
         if (selectedFilterTags.has(tag)) {
           tagElement.classList.add('selected');
