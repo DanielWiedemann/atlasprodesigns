@@ -454,7 +454,7 @@
         <div class="upload-content">
           <i class="fas fa-cloud-upload-alt"></i>
           <p>Drag & drop files here or click to browse</p>
-          <p class="upload-hint">Supports .webp, .png, .jpg, .jpeg files</p>
+          <p class="upload-hint">Supports .webp, .png, .jpg, .jpeg files - Images will be automatically resized to max 500px height and converted to WebP</p>
         </div>
         <input type="file" id="fileInput" multiple accept=".webp,.png,.jpg,.jpeg" style="display: none;">
       </div>
@@ -1243,6 +1243,80 @@
       return filename.replace(/\.(webp|png|jpg|jpeg)$/i, '');
     }
     
+    // Process image to WebP with max height of 500px
+    async function processImage(file) {
+      return new Promise((resolve, reject) => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        img.onload = function() {
+          // Calculate new dimensions (max height 500px, maintain aspect ratio)
+          const maxHeight = 500;
+          let { width, height } = img;
+          
+          // If image is already smaller than max height, don't resize
+          if (height <= maxHeight) {
+            // Just convert to WebP without resizing
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+          } else {
+            // Resize to max height while maintaining aspect ratio
+            const ratio = maxHeight / height;
+            width = Math.round(width * ratio);
+            height = maxHeight;
+            
+            canvas.width = width;
+            canvas.height = height;
+            ctx.drawImage(img, 0, 0, width, height);
+          }
+          
+          // Convert to WebP with quality based on original size
+          let quality = 0.85; // Default quality
+          
+          // Adjust quality based on original file size to optimize
+          if (file.size > 1024 * 1024) { // > 1MB
+            quality = 0.75;
+          } else if (file.size > 500 * 1024) { // > 500KB
+            quality = 0.80;
+          }
+          
+          canvas.toBlob((blob) => {
+            if (blob) {
+              // Convert blob to base64
+              const reader = new FileReader();
+              reader.onload = function() {
+                const base64 = reader.result;
+                const newFilename = file.name.replace(/\.[^/.]+$/, '') + '.webp';
+                
+                // Create a new File object with the processed image
+                const processedFile = new File([blob], newFilename, {
+                  type: 'image/webp',
+                  lastModified: Date.now()
+                });
+                
+                resolve({
+                  file: processedFile,
+                  filename: newFilename,
+                  originalSize: file.size,
+                  processedSize: blob.size,
+                  originalDimensions: { width: img.naturalWidth, height: img.naturalHeight },
+                  processedDimensions: { width, height }
+                });
+              };
+              reader.readAsDataURL(blob);
+            } else {
+              reject(new Error('Failed to process image'));
+            }
+          }, 'image/webp', quality);
+        };
+        
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = URL.createObjectURL(file);
+      });
+    }
+
     async function uploadDesignToSupabase(design, supabaseUrl, supabaseKey, imageUrlPrefix) {
       try {
         // First check if file already exists in storage and delete it
@@ -1345,6 +1419,7 @@
       
       let uploadedCount = 0;
       let errorCount = 0;
+      let totalSizeReduction = 0;
       
       for (let i = 0; i < selectedFiles.length; i++) {
         const file = selectedFiles[i];
@@ -1352,39 +1427,51 @@
         // Update progress
         const progress = ((i + 1) / selectedFiles.length) * 100;
         progressFill.style.width = progress + '%';
-        progressText.textContent = `Uploading ${i + 1} of ${selectedFiles.length}: ${file.name}`;
+        progressText.textContent = `Processing ${i + 1} of ${selectedFiles.length}: ${file.name}`;
         
         try {
-          // Extract design name
+          // Process image (resize and convert to WebP)
+          console.log(`Processing image: ${file.name}`);
+          progressText.textContent = `Processing ${i + 1} of ${selectedFiles.length}: ${file.name}`;
+          const processedImage = await processImage(file);
+          
+          // Update progress for upload
+          progressText.textContent = `Uploading ${i + 1} of ${selectedFiles.length}: ${processedImage.filename}`;
+          
+          // Extract design name from original filename
           const designName = extractDesignName(file.name);
           
-          // Create image URL (assuming files are in designs/ folder)
-          const imageUrl = `http://localhost:50816/designs/${file.name}`;
-          
-          // Upload to Supabase
+          // Upload processed image to Supabase
           const result = await uploadDesignToSupabase({
-            filename: file.name,
+            filename: processedImage.filename,
             name: designName,
-            file: file
+            file: processedImage.file
           }, SUPABASE_URL, SUPABASE_ANON_KEY, 'designs/');
           
           if (result.success) {
             uploadedCount++;
+            const sizeReduction = processedImage.originalSize - processedImage.processedSize;
+            totalSizeReduction += sizeReduction;
+            console.log(`Successfully uploaded ${processedImage.filename}`);
+            console.log(`Original: ${processedImage.originalDimensions.width}x${processedImage.originalDimensions.height}, ${(processedImage.originalSize / 1024).toFixed(1)}KB`);
+            console.log(`Processed: ${processedImage.processedDimensions.width}x${processedImage.processedDimensions.height}, ${(processedImage.processedSize / 1024).toFixed(1)}KB`);
+            console.log(`Size reduction: ${(sizeReduction / 1024).toFixed(1)}KB (${((sizeReduction / processedImage.originalSize) * 100).toFixed(1)}%)`);
           } else {
             errorCount++;
-            console.error(`Failed to upload ${file.name}:`, result.error);
+            console.error(`Failed to upload ${processedImage.filename}:`, result.error);
           }
           
         } catch (error) {
           errorCount++;
-          console.error(`Error uploading ${file.name}:`, error);
+          console.error(`Error processing/uploading ${file.name}:`, error);
         }
       }
       
-      // Show results
-      progressText.textContent = `Upload complete! ${uploadedCount} uploaded, ${errorCount} failed.`;
+      // Show results with size reduction info
+      const totalReductionKB = (totalSizeReduction / 1024).toFixed(1);
+      progressText.textContent = `Upload complete! ${uploadedCount} uploaded, ${errorCount} failed. Size reduced by ${totalReductionKB}KB total.`;
       
-      // Reset after 3 seconds
+      // Reset after 5 seconds
       setTimeout(async () => {
         uploadProgress.style.display = 'none';
         selectedFiles = [];
@@ -1393,7 +1480,7 @@
         
         // Reload designs to show new uploads
         await loadAdminPanel();
-      }, 3000);
+      }, 5000);
     }
   </script>
 </body>
