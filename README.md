@@ -16,12 +16,14 @@ A modern web gallery for showcasing t-shirt designs with admin panel for bulk up
 - **Bulk Upload**: Upload multiple images at once with drag & drop support
 - **Real-time Processing**: See progress and size reduction statistics during upload
 - **Design Management**: Toggle availability status, view ratings, and delete designs
+- **Tag Management**: Add, remove, and bulk tag designs with comprehensive tagging system
 - **Statistics Dashboard**: View total designs, availability status, and average ratings
 
 ### Gallery Features
 - **Responsive Design**: Works on desktop and mobile devices
 - **Rating System**: Users can rate designs from 1-5 stars
-- **Filter Options**: Filter by availability status and ratings
+- **Filter Options**: Filter by availability status, ratings, and tags
+- **Tag System**: Comprehensive tagging for easy organization and discovery
 
 ## Setup
 
@@ -58,6 +60,21 @@ The image processing pipeline:
 3. **Quality Optimization**: Automatically adjusts WebP quality based on original file size
 4. **Size Reduction**: Typically achieves 30-70% file size reduction
 5. **Upload**: Processed images are uploaded to Supabase storage
+
+## Tag System
+
+The comprehensive tagging system includes:
+1. **Individual Tagging**: Click on designs to select them, then add tags
+2. **Bulk Tagging**: Select multiple designs and apply tags to all at once
+3. **Tag Suggestions**: Auto-complete with existing tags or create new ones
+4. **Tag Removal**: Remove individual tags from designs
+5. **Filtering**: Filter designs by tag status (tagged/untagged)
+6. **Default Tags**: Pre-loaded with 30+ suggested tags across categories:
+   - **Color Themes**: Pastel, Bright, Monochromatic, Dark, Vibrant, Earthy, Neon
+   - **Art Styles**: Geometric, Organic, Minimalist, Abstract, Realistic, Cartoon, Tribal
+   - **Subjects**: Animals, Nature, Skulls, Fitness, Ocean, Jungle, Fantasy, Mythology
+   - **Mood**: Energetic, Serene, Powerful, Mysterious, Playful, Elegant, Bold
+   - **Technique**: Tattoo-style, Watercolor, Digital Art, Hand-drawn, Vector
 
 ## Admin Access
 

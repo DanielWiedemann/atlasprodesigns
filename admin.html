@@ -379,6 +379,102 @@
       border-radius: 8px;
       border: 1px solid #e0e0e0;
     }
+    
+    /* Tag Management Styles */
+    .design-admin-card.selected {
+      border: 2px solid #3498db;
+      background: #f0f8ff;
+    }
+    .tag-item {
+      display: inline-flex;
+      align-items: center;
+      background: #3498db;
+      color: white;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      margin: 2px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .tag-item:hover {
+      background: #2980b9;
+    }
+    .tag-item.remove {
+      background: #e74c3c;
+    }
+    .tag-item.remove:hover {
+      background: #c0392b;
+    }
+    .tag-item .remove-tag {
+      margin-left: 4px;
+      font-size: 0.7rem;
+      opacity: 0.8;
+    }
+    .tag-item .remove-tag:hover {
+      opacity: 1;
+    }
+    .design-tags {
+      margin-top: 8px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+    .tag-suggestion {
+      background: #ecf0f1;
+      color: #2c3e50;
+      padding: 4px 8px;
+      border-radius: 12px;
+      font-size: 0.75rem;
+      margin: 2px;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 1px solid #bdc3c7;
+    }
+    .tag-suggestion:hover {
+      background: #d5dbdb;
+    }
+    .tag-suggestion.selected {
+      background: #3498db;
+      color: white;
+      border-color: #3498db;
+    }
+    .bulk-tag-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+    }
+    .bulk-tag-content {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      max-width: 500px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    .bulk-tag-content h3 {
+      margin-top: 0;
+      margin-bottom: 20px;
+    }
+    .bulk-tag-content .close {
+      position: absolute;
+      top: 15px;
+      right: 20px;
+      font-size: 24px;
+      cursor: pointer;
+      color: #666;
+    }
+    .bulk-tag-content .close:hover {
+      color: #333;
+    }
     .progress-bar {
       height: 8px;
       background-color: #e0e0e0;
@@ -498,6 +594,32 @@
       <button class="filter-button" data-filter="available">Available</button>
       <button class="filter-button" data-filter="sold">Sold</button>
       <button class="filter-button" data-filter="rated">With Ratings</button>
+      <button class="filter-button" data-filter="tagged">With Tags</button>
+      <button class="filter-button" data-filter="untagged">No Tags</button>
+    </div>
+    
+    <!-- Tag Management Section -->
+    <div class="tag-management" style="margin-top: 20px; padding: 20px; background: #f0f2f5; border-radius: 12px;">
+      <h3 style="margin-top: 0; margin-bottom: 15px;">Tag Management</h3>
+      
+      <!-- Tag Input and Add -->
+      <div style="display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap;">
+        <input type="text" id="tagInput" placeholder="Enter tag name..." style="flex: 1; min-width: 200px; padding: 8px 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
+        <button id="addTagBtn" style="background: #3498db; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;">Add Tag</button>
+        <button id="bulkTagBtn" style="background: #27ae60; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;">Bulk Tag Selected</button>
+        <button id="clearSelectionBtn" style="background: #95a5a6; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: bold;">Clear Selection</button>
+      </div>
+      
+      <!-- Existing Tags Display -->
+      <div id="existingTags" style="margin-bottom: 15px;">
+        <h4 style="margin-bottom: 10px;">Existing Tags:</h4>
+        <div id="tagsList" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+      </div>
+      
+      <!-- Selected Designs Counter -->
+      <div id="selectionInfo" style="background: #e8f4fd; padding: 10px; border-radius: 6px; margin-bottom: 15px; display: none;">
+        <strong id="selectedCount">0</strong> designs selected
+      </div>
     </div>
     
     <div class="loading" id="loading">
@@ -511,6 +633,30 @@
   </div>
 </div>
 
+  <!-- Bulk Tag Modal -->
+  <div id="bulkTagModal" class="bulk-tag-modal">
+    <div class="bulk-tag-content">
+      <span class="close" onclick="closeBulkTagModal()">&times;</span>
+      <h3>Bulk Tag Selected Designs</h3>
+      <p>Select tags to add to <span id="bulkTagCount">0</span> selected designs:</p>
+      
+      <div style="margin: 20px 0;">
+        <input type="text" id="bulkTagInput" placeholder="Type to search or create new tag..." style="width: 100%; padding: 8px 12px; border: 2px solid #ddd; border-radius: 6px; margin-bottom: 10px;">
+        <div id="bulkTagSuggestions" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;"></div>
+      </div>
+      
+      <div style="margin: 20px 0;">
+        <h4>Selected Tags:</h4>
+        <div id="bulkSelectedTags" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px;"></div>
+      </div>
+      
+      <div style="display: flex; gap: 10px; justify-content: flex-end;">
+        <button onclick="closeBulkTagModal()" style="background: #95a5a6; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer;">Cancel</button>
+        <button onclick="applyBulkTags()" style="background: #27ae60; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold;">Apply Tags</button>
+      </div>
+    </div>
+  </div>
+
   <script>
     let supabase = null;
     let SUPABASE_URL = null;
@@ -518,6 +664,9 @@
     let designs = [];
     let currentFilter = 'all';
     let selectedFiles = [];
+    let selectedDesigns = new Set();
+    let allTags = new Set();
+    let bulkSelectedTags = new Set();
 
     // Passcode system
     const CORRECT_PASSCODE = atob('MTIzNzg5'); 
@@ -757,6 +906,12 @@
         case 'rated':
           filteredDesigns = designs.filter(d => d.total_ratings > 0);
           break;
+        case 'tagged':
+          filteredDesigns = designs.filter(d => d.tags && d.tags.length > 0);
+          break;
+        case 'untagged':
+          filteredDesigns = designs.filter(d => !d.tags || d.tags.length === 0);
+          break;
       }
       
       filteredDesigns.forEach(design => {
@@ -771,6 +926,20 @@
       if (design.is_sold) {
         card.classList.add('sold');
       }
+      
+      // Add selection state
+      if (selectedDesigns.has(design.id)) {
+        card.classList.add('selected');
+      }
+      
+      // Make card clickable for selection
+      card.onclick = function(e) {
+        // Don't trigger selection if clicking on interactive elements
+        if (e.target.closest('.toggle-switch') || e.target.closest('.delete-button')) {
+          return;
+        }
+        toggleDesignSelection(design.id);
+      };
       
       const thumbnail = document.createElement('img');
       thumbnail.src = design.image_url;
@@ -793,6 +962,25 @@
           <div>Avg Rating</div>
         </div>
       `;
+      
+      // Add tags section
+      const tagsContainer = document.createElement('div');
+      tagsContainer.className = 'design-tags';
+      
+      if (design.tags && design.tags.length > 0) {
+        design.tags.forEach(tag => {
+          const tagElement = document.createElement('span');
+          tagElement.className = 'tag-item';
+          tagElement.innerHTML = `${tag} <span class="remove-tag" onclick="removeTagFromDesign('${design.id}', '${tag}')">&times;</span>`;
+          tagsContainer.appendChild(tagElement);
+        });
+      } else {
+        const noTagsText = document.createElement('span');
+        noTagsText.style.color = '#999';
+        noTagsText.style.fontSize = '0.8rem';
+        noTagsText.textContent = 'No tags';
+        tagsContainer.appendChild(noTagsText);
+      }
       
       const toggleContainer = document.createElement('div');
       toggleContainer.className = 'toggle-container';
@@ -1027,6 +1215,7 @@
       card.appendChild(thumbnail);
       card.appendChild(name);
       card.appendChild(stats);
+      card.appendChild(tagsContainer);
       card.appendChild(toggleContainer);
       card.appendChild(deleteButton);
       
@@ -1101,6 +1290,7 @@
       await initializeSupabase();
       await loadAdminPanel();
       setupFileUpload();
+      setupTagManagement();
     }
     
     // Bulk Upload Functions
@@ -1481,6 +1671,346 @@
         // Reload designs to show new uploads
         await loadAdminPanel();
       }, 5000);
+    }
+    
+    // Tag Management Functions
+    function setupTagManagement() {
+      // Add tag button
+      document.getElementById('addTagBtn').addEventListener('click', addNewTag);
+      
+      // Bulk tag button
+      document.getElementById('bulkTagBtn').addEventListener('click', openBulkTagModal);
+      
+      // Clear selection button
+      document.getElementById('clearSelectionBtn').addEventListener('click', clearSelection);
+      
+      // Tag input enter key
+      document.getElementById('tagInput').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          addNewTag();
+        }
+      });
+      
+      // Bulk tag input
+      document.getElementById('bulkTagInput').addEventListener('input', function(e) {
+        filterTagSuggestions(e.target.value);
+      });
+      
+      // Load existing tags
+      loadAllTags();
+      
+      // Add some default tags if none exist
+      setTimeout(() => {
+        if (allTags.size === 0) {
+          addDefaultTags();
+        }
+      }, 1000);
+    }
+    
+    function addDefaultTags() {
+      const defaultTags = [
+        'Pastel', 'Bright', 'Monochromatic', 'Dark', 'Vibrant', 'Earthy', 'Neon',
+        'Geometric', 'Organic', 'Minimalist', 'Abstract', 'Realistic', 'Cartoon', 'Tribal',
+        'Animals', 'Nature', 'Skulls', 'Fitness', 'Ocean', 'Jungle', 'Fantasy', 'Mythology',
+        'Energetic', 'Serene', 'Powerful', 'Mysterious', 'Playful', 'Elegant', 'Bold',
+        'Tattoo-style', 'Watercolor', 'Digital Art', 'Hand-drawn', 'Vector'
+      ];
+      
+      defaultTags.forEach(tag => {
+        allTags.add(tag);
+      });
+      
+      updateTagsList();
+    }
+    
+    async function loadAllTags() {
+      try {
+        const { data, error } = await supabase
+          .from('designs')
+          .select('tags');
+        
+        if (error) throw error;
+        
+        // Collect all unique tags
+        allTags.clear();
+        data.forEach(design => {
+          if (design.tags && Array.isArray(design.tags)) {
+            design.tags.forEach(tag => allTags.add(tag));
+          }
+        });
+        
+        updateTagsList();
+      } catch (error) {
+        console.error('Error loading tags:', error);
+      }
+    }
+    
+    function updateTagsList() {
+      const tagsList = document.getElementById('tagsList');
+      tagsList.innerHTML = '';
+      
+      const sortedTags = Array.from(allTags).sort();
+      sortedTags.forEach(tag => {
+        const tagElement = document.createElement('span');
+        tagElement.className = 'tag-suggestion';
+        tagElement.textContent = tag;
+        tagElement.onclick = () => addTagToSelected(tag);
+        tagsList.appendChild(tagElement);
+      });
+    }
+    
+    function addNewTag() {
+      const tagInput = document.getElementById('tagInput');
+      const tagName = tagInput.value.trim();
+      
+      if (tagName) {
+        allTags.add(tagName);
+        updateTagsList();
+        tagInput.value = '';
+        
+        // Add tag to selected designs
+        addTagToSelected(tagName);
+      }
+    }
+    
+    async function addTagToSelected(tagName) {
+      if (selectedDesigns.size === 0) {
+        alert('Please select at least one design first.');
+        return;
+      }
+      
+      const selectedDesignsArray = Array.from(selectedDesigns);
+      let successCount = 0;
+      let errorCount = 0;
+      
+      for (const designId of selectedDesignsArray) {
+        try {
+          const { data, error } = await supabase
+            .rpc('add_design_tag', {
+              design_id: designId,
+              tag: tagName
+            });
+          
+          if (error) {
+            console.error(`Error adding tag to design ${designId}:`, error);
+            errorCount++;
+          } else {
+            successCount++;
+            // Update the design in our local array
+            const design = designs.find(d => d.id === designId);
+            if (design) {
+              if (!design.tags) design.tags = [];
+              if (!design.tags.includes(tagName)) {
+                design.tags.push(tagName);
+              }
+            }
+          }
+        } catch (error) {
+          console.error(`Error adding tag to design ${designId}:`, error);
+          errorCount++;
+        }
+      }
+      
+      if (successCount > 0) {
+        alert(`Successfully added tag "${tagName}" to ${successCount} design(s).`);
+        updateDesignCards();
+      }
+      
+      if (errorCount > 0) {
+        alert(`Failed to add tag to ${errorCount} design(s).`);
+      }
+    }
+    
+    async function removeTagFromDesign(designId, tagName) {
+      try {
+        const { data, error } = await supabase
+          .rpc('remove_design_tag', {
+            design_id: designId,
+            tag: tagName
+          });
+        
+        if (error) {
+          console.error(`Error removing tag from design ${designId}:`, error);
+          return false;
+        }
+        
+        // Update the design in our local array
+        const design = designs.find(d => d.id === designId);
+        if (design && design.tags) {
+          design.tags = design.tags.filter(tag => tag !== tagName);
+        }
+        
+        updateDesignCards();
+        return true;
+      } catch (error) {
+        console.error(`Error removing tag from design ${designId}:`, error);
+        return false;
+      }
+    }
+    
+    function toggleDesignSelection(designId) {
+      if (selectedDesigns.has(designId)) {
+        selectedDesigns.delete(designId);
+      } else {
+        selectedDesigns.add(designId);
+      }
+      
+      updateSelectionInfo();
+      updateDesignCards();
+    }
+    
+    function updateSelectionInfo() {
+      const selectionInfo = document.getElementById('selectionInfo');
+      const selectedCount = document.getElementById('selectedCount');
+      
+      if (selectedDesigns.size > 0) {
+        selectedCount.textContent = selectedDesigns.size;
+        selectionInfo.style.display = 'block';
+      } else {
+        selectionInfo.style.display = 'none';
+      }
+    }
+    
+    function clearSelection() {
+      selectedDesigns.clear();
+      updateSelectionInfo();
+      updateDesignCards();
+    }
+    
+    function openBulkTagModal() {
+      if (selectedDesigns.size === 0) {
+        alert('Please select at least one design first.');
+        return;
+      }
+      
+      document.getElementById('bulkTagCount').textContent = selectedDesigns.size;
+      document.getElementById('bulkTagModal').style.display = 'flex';
+      document.getElementById('bulkTagInput').value = '';
+      document.getElementById('bulkTagSuggestions').innerHTML = '';
+      document.getElementById('bulkSelectedTags').innerHTML = '';
+      bulkSelectedTags.clear();
+    }
+    
+    function closeBulkTagModal() {
+      document.getElementById('bulkTagModal').style.display = 'none';
+    }
+    
+    function filterTagSuggestions(query) {
+      const suggestions = document.getElementById('bulkTagSuggestions');
+      suggestions.innerHTML = '';
+      
+      if (!query.trim()) return;
+      
+      const filteredTags = Array.from(allTags).filter(tag => 
+        tag.toLowerCase().includes(query.toLowerCase())
+      );
+      
+      // Add existing tags that match
+      filteredTags.forEach(tag => {
+        const tagElement = document.createElement('span');
+        tagElement.className = 'tag-suggestion';
+        tagElement.textContent = tag;
+        tagElement.onclick = () => selectTagForBulk(tag);
+        suggestions.appendChild(tagElement);
+      });
+      
+      // Add option to create new tag if it doesn't exist
+      if (!filteredTags.includes(query) && query.trim()) {
+        const newTagElement = document.createElement('span');
+        newTagElement.className = 'tag-suggestion';
+        newTagElement.style.background = '#27ae60';
+        newTagElement.style.color = 'white';
+        newTagElement.textContent = `Create "${query}"`;
+        newTagElement.onclick = () => selectTagForBulk(query);
+        suggestions.appendChild(newTagElement);
+      }
+    }
+    
+    function selectTagForBulk(tagName) {
+      if (bulkSelectedTags.has(tagName)) {
+        bulkSelectedTags.delete(tagName);
+      } else {
+        bulkSelectedTags.add(tagName);
+      }
+      
+      updateBulkSelectedTags();
+      document.getElementById('bulkTagInput').value = '';
+      document.getElementById('bulkTagSuggestions').innerHTML = '';
+    }
+    
+    function updateBulkSelectedTags() {
+      const container = document.getElementById('bulkSelectedTags');
+      container.innerHTML = '';
+      
+      Array.from(bulkSelectedTags).forEach(tag => {
+        const tagElement = document.createElement('span');
+        tagElement.className = 'tag-item remove';
+        tagElement.innerHTML = `${tag} <span class="remove-tag" onclick="removeBulkTag('${tag}')">&times;</span>`;
+        container.appendChild(tagElement);
+      });
+    }
+    
+    function removeBulkTag(tagName) {
+      bulkSelectedTags.delete(tagName);
+      updateBulkSelectedTags();
+    }
+    
+    async function applyBulkTags() {
+      if (bulkSelectedTags.size === 0) {
+        alert('Please select at least one tag.');
+        return;
+      }
+      
+      const selectedDesignsArray = Array.from(selectedDesigns);
+      const tagsArray = Array.from(bulkSelectedTags);
+      let successCount = 0;
+      let errorCount = 0;
+      
+      for (const designId of selectedDesignsArray) {
+        for (const tagName of tagsArray) {
+          try {
+            const { data, error } = await supabase
+              .rpc('add_design_tag', {
+                design_id: designId,
+                tag: tagName
+              });
+            
+            if (error) {
+              console.error(`Error adding tag ${tagName} to design ${designId}:`, error);
+              errorCount++;
+            } else {
+              successCount++;
+              // Update the design in our local array
+              const design = designs.find(d => d.id === designId);
+              if (design) {
+                if (!design.tags) design.tags = [];
+                if (!design.tags.includes(tagName)) {
+                  design.tags.push(tagName);
+                }
+              }
+            }
+          } catch (error) {
+            console.error(`Error adding tag ${tagName} to design ${designId}:`, error);
+            errorCount++;
+          }
+        }
+      }
+      
+      if (successCount > 0) {
+        alert(`Successfully added ${tagsArray.length} tag(s) to ${selectedDesignsArray.length} design(s).`);
+        updateDesignCards();
+        closeBulkTagModal();
+        clearSelection();
+      }
+      
+      if (errorCount > 0) {
+        alert(`Failed to add ${errorCount} tag(s).`);
+      }
+    }
+    
+    function updateDesignCards() {
+      // Re-render all design cards to show updated tags and selection state
+      filterDesigns();
     }
   </script>
 </body>
