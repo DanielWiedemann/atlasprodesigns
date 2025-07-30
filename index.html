@@ -189,6 +189,137 @@
       background: #555;
     }
     
+    /* Filter System Styles */
+    .filter-icon {
+      position: fixed;
+      top: 20px;
+      right: 80px;
+      background: #3498db;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: bold;
+      z-index: 1000;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      transition: background 0.2s;
+    }
+    .filter-icon:hover {
+      background: #2980b9;
+    }
+    .filter-icon.active {
+      background: #27ae60;
+    }
+    .filter-panel {
+      position: fixed;
+      top: 70px;
+      right: 20px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+      padding: 20px;
+      width: 280px;
+      max-height: 400px;
+      overflow-y: auto;
+      z-index: 1001;
+      display: none;
+      border: 1px solid #e0e0e0;
+    }
+    .filter-panel.show {
+      display: block;
+    }
+    .filter-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #eee;
+    }
+    .filter-header h3 {
+      margin: 0;
+      font-size: 1rem;
+      color: #333;
+    }
+    .filter-close {
+      background: none;
+      border: none;
+      font-size: 1.2rem;
+      cursor: pointer;
+      color: #666;
+      padding: 0;
+      width: 24px;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .filter-close:hover {
+      color: #333;
+    }
+    .filter-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+    .filter-tag {
+      background: #f8f9fa;
+      color: #333;
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: 2px solid transparent;
+    }
+    .filter-tag:hover {
+      background: #e9ecef;
+    }
+    .filter-tag.selected {
+      background: #3498db;
+      color: white;
+      border-color: #3498db;
+    }
+    .filter-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 15px;
+      padding-top: 15px;
+      border-top: 1px solid #eee;
+    }
+    .filter-btn {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .filter-apply {
+      background: #27ae60;
+      color: white;
+    }
+    .filter-apply:hover {
+      background: #229954;
+    }
+    .filter-clear {
+      background: #95a5a6;
+      color: white;
+    }
+    .filter-clear:hover {
+      background: #7f8c8d;
+    }
+    .filter-count {
+      font-size: 0.8rem;
+      color: #666;
+      margin-top: 10px;
+      text-align: center;
+    }
+    
     /* Mobile responsive styles */
     @media (max-width: 768px) {
       .gallery-container {
@@ -219,6 +350,18 @@
         padding: 6px 10px;
         font-size: 0.7rem;
       }
+      .filter-icon {
+        top: 15px;
+        right: 70px;
+        padding: 6px 10px;
+        font-size: 0.7rem;
+      }
+      .filter-panel {
+        top: 60px;
+        right: 15px;
+        width: calc(100vw - 30px);
+        max-width: 280px;
+      }
       h1 {
         font-size: 1.4rem;
         margin-top: 10px;
@@ -234,6 +377,29 @@
   <div class="atlas-logo"><img src="logo.png" alt="Atlas Pro Logo" /></div>
   <h1>Designs Gallery</h1>
   
+  <!-- Filter Icon -->
+  <div class="filter-icon" id="filterIcon">
+    <i class="fas fa-filter"></i> Filter
+  </div>
+  
+  <!-- Filter Panel -->
+  <div class="filter-panel" id="filterPanel">
+    <div class="filter-header">
+      <h3>Filter by Tags</h3>
+      <button class="filter-close" id="filterClose">&times;</button>
+    </div>
+    <div class="filter-tags" id="filterTags">
+      <!-- Tags will be loaded here -->
+    </div>
+    <div class="filter-actions">
+      <button class="filter-btn filter-apply" id="filterApply">Apply Filter</button>
+      <button class="filter-btn filter-clear" id="filterClear">Clear</button>
+    </div>
+    <div class="filter-count" id="filterCount">
+      Showing all designs
+    </div>
+  </div>
+  
   <div class="gallery-container">
     <div id="gallery" class="gallery-grid">
       <div class="loading">
@@ -248,6 +414,10 @@
     let supabase = null;
     let SUPABASE_URL = null;
     let SUPABASE_ANON_KEY = null;
+    let allDesigns = [];
+    let filteredDesigns = [];
+    let selectedFilterTags = new Set();
+    let allAvailableTags = new Set();
 
     async function loadSupabaseConfig() {
       try {
@@ -276,6 +446,138 @@
     async function initializeSupabase() {
       const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm');
       supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    }
+    
+    // Filter System Functions
+    function setupFilterSystem() {
+      // Filter icon click
+      document.getElementById('filterIcon').addEventListener('click', toggleFilterPanel);
+      
+      // Filter close button
+      document.getElementById('filterClose').addEventListener('click', closeFilterPanel);
+      
+      // Apply filter button
+      document.getElementById('filterApply').addEventListener('click', applyFilter);
+      
+      // Clear filter button
+      document.getElementById('filterClear').addEventListener('click', clearFilter);
+      
+      // Close panel when clicking outside
+      document.addEventListener('click', function(e) {
+        const panel = document.getElementById('filterPanel');
+        const icon = document.getElementById('filterIcon');
+        if (!panel.contains(e.target) && !icon.contains(e.target)) {
+          closeFilterPanel();
+        }
+      });
+    }
+    
+    function toggleFilterPanel() {
+      const panel = document.getElementById('filterPanel');
+      const icon = document.getElementById('filterIcon');
+      
+      if (panel.classList.contains('show')) {
+        closeFilterPanel();
+      } else {
+        openFilterPanel();
+      }
+    }
+    
+    function openFilterPanel() {
+      const panel = document.getElementById('filterPanel');
+      const icon = document.getElementById('filterIcon');
+      
+      panel.classList.add('show');
+      icon.classList.add('active');
+    }
+    
+    function closeFilterPanel() {
+      const panel = document.getElementById('filterPanel');
+      const icon = document.getElementById('filterIcon');
+      
+      panel.classList.remove('show');
+      icon.classList.remove('active');
+    }
+    
+    function loadAvailableTags() {
+      // Collect all unique tags from designs
+      allAvailableTags.clear();
+      allDesigns.forEach(design => {
+        if (design.tags && Array.isArray(design.tags)) {
+          design.tags.forEach(tag => allAvailableTags.add(tag));
+        }
+      });
+      
+      updateFilterTags();
+    }
+    
+    function updateFilterTags() {
+      const filterTagsContainer = document.getElementById('filterTags');
+      filterTagsContainer.innerHTML = '';
+      
+      const sortedTags = Array.from(allAvailableTags).sort();
+      sortedTags.forEach(tag => {
+        const tagElement = document.createElement('div');
+        tagElement.className = 'filter-tag';
+        tagElement.textContent = tag;
+        tagElement.onclick = () => toggleFilterTag(tag);
+        
+        if (selectedFilterTags.has(tag)) {
+          tagElement.classList.add('selected');
+        }
+        
+        filterTagsContainer.appendChild(tagElement);
+      });
+    }
+    
+    function toggleFilterTag(tag) {
+      if (selectedFilterTags.has(tag)) {
+        selectedFilterTags.delete(tag);
+      } else {
+        selectedFilterTags.add(tag);
+      }
+      
+      updateFilterTags();
+      updateFilterCount();
+    }
+    
+    function applyFilter() {
+      if (selectedFilterTags.size === 0) {
+        // Show all designs if no tags selected
+        filteredDesigns = [...allDesigns];
+      } else {
+        // Filter designs that have ANY of the selected tags
+        filteredDesigns = allDesigns.filter(design => {
+          if (!design.tags || !Array.isArray(design.tags)) return false;
+          return design.tags.some(tag => selectedFilterTags.has(tag));
+        });
+      }
+      
+      renderGallery();
+      updateFilterCount();
+      closeFilterPanel();
+    }
+    
+    function clearFilter() {
+      selectedFilterTags.clear();
+      filteredDesigns = [...allDesigns];
+      updateFilterTags();
+      renderGallery();
+      updateFilterCount();
+      closeFilterPanel();
+    }
+    
+    function updateFilterCount() {
+      const filterCount = document.getElementById('filterCount');
+      const totalDesigns = allDesigns.length;
+      const showingDesigns = filteredDesigns.length;
+      
+      if (selectedFilterTags.size === 0) {
+        filterCount.textContent = `Showing all ${totalDesigns} designs`;
+      } else {
+        const tagList = Array.from(selectedFilterTags).join(', ');
+        filterCount.textContent = `Showing ${showingDesigns} of ${totalDesigns} designs (${tagList})`;
+      }
     }
 
     function getVisitorId() {
@@ -396,7 +698,7 @@
       try {
         const { data: designs, error } = await supabase
           .from('design_stats')
-          .select('*')
+          .select('*, tags')
           .order('created_at', { ascending: false });
         
         if (error) {
@@ -461,21 +763,33 @@
     }
 
     async function renderGallery() {
-      const designs = await loadDesigns();
       const gallery = document.getElementById('gallery');
       
-      if (designs.length === 0) {
-        gallery.innerHTML = `
-          <div class="no-designs">
-            <i class="fas fa-images"></i><br>
-            No designs found. Please upload some designs first.
-          </div>
-        `;
+      // Use filtered designs if available, otherwise use all designs
+      const designsToShow = filteredDesigns.length > 0 ? filteredDesigns : allDesigns;
+      
+      if (designsToShow.length === 0) {
+        if (allDesigns.length === 0) {
+          gallery.innerHTML = `
+            <div class="no-designs">
+              <i class="fas fa-images"></i><br>
+              No designs found. Please upload some designs first.
+            </div>
+          `;
+        } else {
+          gallery.innerHTML = `
+            <div class="no-designs">
+              <i class="fas fa-filter"></i><br>
+              No designs match the selected filters.<br>
+              <small>Try selecting different tags or clear the filter.</small>
+            </div>
+          `;
+        }
         return;
       }
       
       gallery.innerHTML = '';
-      designs.forEach(design => {
+      designsToShow.forEach(design => {
         const card = createDesignCard(design);
         gallery.appendChild(card);
       });
@@ -486,6 +800,17 @@
       await loadSupabaseConfig();
       if (SUPABASE_URL && SUPABASE_ANON_KEY) {
         await initializeSupabase();
+        
+        // Load all designs first
+        allDesigns = await loadDesigns();
+        filteredDesigns = [...allDesigns];
+        
+        // Setup filter system
+        setupFilterSystem();
+        loadAvailableTags();
+        updateFilterCount();
+        
+        // Render gallery
         await renderGallery();
         setupImageProtection();
       }
