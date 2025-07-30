@@ -681,79 +681,87 @@
     <i class="fas fa-arrow-left"></i> Back to Gallery
   </a>
   
-  <div style="text-align: center; width: 100%; padding: 0 20px; box-sizing: border-box;">
+  <div style="text-align: center; width: 100%; padding: 20px 20px; box-sizing: border-box;">
     <div class="atlas-logo" style="margin: 15px auto 0 auto; display: inline-block;"><a href="index.html"><img src="logo.png" alt="Atlas Pro Logo" /></a></div>
   </div>
   <h1 style="text-align: center; margin-top: 15px; color: #000000; text-transform: uppercase; font-size: 1.6rem;">Admin Panel</h1>
   
-  <div class="admin-container">
-    
-    <!-- Bulk Upload Section -->
-    <div class="upload-section">
-      <h3>Bulk Upload Designs</h3>
-      <p>Upload multiple design files to add them to the database.</p>
+  <!-- Bulk Upload, Stats, Filters with 10px margins -->
+  <div style="margin: 0 10px;">
+    <div class="admin-container">
       
-      <div class="file-upload-area" id="fileUploadArea">
-        <div class="upload-content">
-          <i class="fas fa-cloud-upload-alt"></i>
-          <p>Drag & drop files here or click to browse</p>
-          <p class="upload-hint">Supports .webp, .png, .jpg, .jpeg files - Images will be automatically resized to max 500px height and converted to WebP</p>
+      <!-- Bulk Upload Section -->
+      <div class="upload-section">
+        <h3>Bulk Upload Designs</h3>
+        <p>Upload multiple design files to add them to the database.</p>
+        
+        <div class="file-upload-area" id="fileUploadArea">
+          <div class="upload-content">
+            <i class="fas fa-cloud-upload-alt"></i>
+            <p>Drag & drop files here or click to browse</p>
+            <p class="upload-hint">Supports .webp, .png, .jpg, .jpeg files - Images will be automatically resized to max 500px height and converted to WebP</p>
+          </div>
+          <input type="file" id="fileInput" multiple accept=".webp,.png,.jpg,.jpeg" style="display: none;">
         </div>
-        <input type="file" id="fileInput" multiple accept=".webp,.png,.jpg,.jpeg" style="display: none;">
-      </div>
-      
-      <div class="selected-files" id="selectedFiles" style="display: none;">
-        <h4>Selected Files (<span id="fileCount">0</span>)</h4>
-        <div id="fileList"></div>
-        <button class="upload-button" id="uploadButton" disabled>
-          <i class="fas fa-upload"></i> Upload to Supabase
-        </button>
-      </div>
-      
-      <div class="upload-progress" id="uploadProgress" style="display: none;">
-        <div class="progress-bar">
-          <div class="progress-fill" id="progressFill"></div>
+        
+        <div class="selected-files" id="selectedFiles" style="display: none;">
+          <h4>Selected Files (<span id="fileCount">0</span>)</h4>
+          <div id="fileList"></div>
+          <button class="upload-button" id="uploadButton" disabled>
+            <i class="fas fa-upload"></i> Upload to Supabase
+          </button>
         </div>
-        <div class="progress-text" id="progressText">Uploading...</div>
+        
+        <div class="upload-progress" id="uploadProgress" style="display: none;">
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+          <div class="progress-text" id="progressText">Uploading...</div>
+        </div>
+      </div>
+      
+      <div class="stats">
+        <div class="stat-card">
+          <div class="stat-number" id="totalDesigns">0</div>
+          <div class="stat-label">Total Designs</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="availableDesigns">0</div>
+          <div class="stat-label">Available</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="soldDesigns">0</div>
+          <div class="stat-label">Sold</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="averageRating">0.0</div>
+          <div class="stat-label">Avg Rating</div>
+        </div>
+      </div>
+      <div class="filters" style="padding-top: 20px;">
+        <button class="filter-button active" data-filter="all">All Designs</button>
+        <button class="filter-button" data-filter="available">Available</button>
+        <button class="filter-button" data-filter="sold">Sold</button>
+        <button class="filter-button" data-filter="rated">With Ratings</button>
+        <button class="filter-button" data-filter="tagged">With Tags</button>
+        <button class="filter-button" data-filter="untagged">No Tags</button>
+      </div>
+      
+      <div class="loading" id="loading">
+        <div class="loading-spinner"></div>
+        Loading designs...
       </div>
     </div>
-    
-    <div class="stats">
-      <div class="stat-card">
-        <div class="stat-number" id="totalDesigns">0</div>
-        <div class="stat-label">Total Designs</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number" id="availableDesigns">0</div>
-        <div class="stat-label">Available</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number" id="soldDesigns">0</div>
-        <div class="stat-label">Sold</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-number" id="averageRating">0.0</div>
-        <div class="stat-label">Avg Rating</div>
+  </div>
+  
+  <!-- Admin Layout with Tag Management (0 margin) and Design Grid (10px margin) -->
+  <div class="admin-layout">
+    <!-- Design Grid with 10px margins -->
+    <div style="margin: 0 10px; flex: 1;">
+      <div class="designs-grid" id="designsGrid">
+        <!-- Designs will be loaded here -->
       </div>
     </div>
-    <div class="filters" style="padding-top: 20px;">
-      <button class="filter-button active" data-filter="all">All Designs</button>
-      <button class="filter-button" data-filter="available">Available</button>
-      <button class="filter-button" data-filter="sold">Sold</button>
-      <button class="filter-button" data-filter="rated">With Ratings</button>
-      <button class="filter-button" data-filter="tagged">With Tags</button>
-      <button class="filter-button" data-filter="untagged">No Tags</button>
-    </div>
-    
-    <div class="loading" id="loading">
-      <div class="loading-spinner"></div>
-      Loading designs...
-    </div>
-    
-    <div class="admin-layout">
-    <div class="designs-grid" id="designsGrid">
-      <!-- Designs will be loaded here -->
-      </div>
       
             <!-- Tag Management Sidebar -->
       <div class="tag-sidebar">
