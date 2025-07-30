@@ -490,6 +490,31 @@
     .bulk-tag-content .close:hover {
       color: #333;
     }
+    
+    /* Notification System */
+    .notification {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #27ae60;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      z-index: 10001;
+      font-weight: bold;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+    }
+    .notification.show {
+      transform: translateX(0);
+    }
+    .notification.error {
+      background: #e74c3c;
+    }
+    .notification.warning {
+      background: #f39c12;
+    }
     .progress-bar {
       height: 8px;
       background-color: #e0e0e0;
@@ -635,15 +660,16 @@
       <div class="tag-sidebar">
         <h3 style="margin-top: 0; margin-bottom: 15px;">Tag Management</h3>
         
-        <!-- Tag Input and Add -->
-        <div style="margin-bottom: 15px;">
-          <input type="text" id="tagInput" placeholder="Enter tag name..." style="width: 100%; padding: 8px 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; margin-bottom: 10px;">
-          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-            <button id="addTagBtn" style="background: #3498db; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">Add Tag</button>
-            <button id="bulkTagBtn" style="background: #27ae60; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">Bulk Tag</button>
-            <button id="clearSelectionBtn" style="background: #95a5a6; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">Clear</button>
+                  <!-- Tag Input and Add -->
+          <div style="margin-bottom: 15px;">
+            <input type="text" id="tagInput" placeholder="Enter tag name..." style="width: 100%; padding: 8px 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px; margin-bottom: 10px;">
+            <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+              <button id="addTagBtn" style="background: #3498db; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">Create Tag</button>
+              <button id="bulkTagBtn" style="background: #27ae60; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">Bulk Tag</button>
+              <button id="removeAllTagsBtn" style="background: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">Remove All Tags</button>
+              <button id="clearSelectionBtn" style="background: #95a5a6; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 12px;">Clear</button>
+            </div>
           </div>
-        </div>
         
         <!-- Selected Designs Counter -->
         <div id="selectionInfo" style="background: #e8f4fd; padding: 10px; border-radius: 6px; margin-bottom: 15px; display: none;">
@@ -656,9 +682,19 @@
           <div id="tagsList" style="display: flex; flex-wrap: wrap; gap: 6px; max-height: 300px; overflow-y: auto;"></div>
         </div>
       </div>
+      
+      <!-- Bulk Delete Section -->
+      <div class="tag-sidebar" style="margin-top: 20px;">
+        <h3 style="margin-top: 0; margin-bottom: 15px;">Bulk Delete</h3>
+        <p style="font-size: 12px; color: #666; margin-bottom: 15px;">Delete all selected designs permanently. This action cannot be undone.</p>
+        <button id="bulkDeleteBtn" style="background: #e74c3c; color: white; border: none; padding: 12px 16px; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px; width: 100%;">Delete Selected Designs</button>
+      </div>
     </div>
   </div>
 </div>
+
+  <!-- Notification Container -->
+  <div id="notificationContainer"></div>
 
   <!-- Bulk Tag Modal -->
   <div id="bulkTagModal" class="bulk-tag-modal">
@@ -1729,19 +1765,25 @@
     
     // Tag Management Functions
     function setupTagManagement() {
-      // Add tag button
-      document.getElementById('addTagBtn').addEventListener('click', addNewTag);
+      // Create tag button
+      document.getElementById('addTagBtn').addEventListener('click', createNewTag);
       
       // Bulk tag button
       document.getElementById('bulkTagBtn').addEventListener('click', openBulkTagModal);
       
+      // Remove all tags button
+      document.getElementById('removeAllTagsBtn').addEventListener('click', removeAllTagsFromSelected);
+      
       // Clear selection button
       document.getElementById('clearSelectionBtn').addEventListener('click', clearSelection);
+      
+      // Bulk delete button
+      document.getElementById('bulkDeleteBtn').addEventListener('click', bulkDeleteSelected);
       
       // Tag input enter key
       document.getElementById('tagInput').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
-          addNewTag();
+          createNewTag();
         }
       });
       
@@ -1804,7 +1846,25 @@
       });
     }
     
-    function addNewTag() {
+    function showNotification(message, type = 'success', duration = 3000) {
+      const container = document.getElementById('notificationContainer');
+      const notification = document.createElement('div');
+      notification.className = `notification ${type}`;
+      notification.textContent = message;
+      
+      container.appendChild(notification);
+      
+      // Show notification
+      setTimeout(() => notification.classList.add('show'), 100);
+      
+      // Hide and remove notification
+      setTimeout(() => {
+        notification.classList.remove('show');
+        setTimeout(() => container.removeChild(notification), 300);
+      }, duration);
+    }
+    
+    function createNewTag() {
       const tagInput = document.getElementById('tagInput');
       const tagName = tagInput.value.trim();
       
@@ -1812,15 +1872,13 @@
         allTags.add(tagName);
         updateTagsList();
         tagInput.value = '';
-        
-        // Add tag to selected designs
-        addTagToSelected(tagName);
+        showNotification(`Tag "${tagName}" created successfully!`);
       }
     }
     
     async function addTagToSelected(tagName) {
       if (selectedDesigns.size === 0) {
-        alert('Please select at least one design first.');
+        showNotification('Please select at least one design first.', 'warning');
         return;
       }
       
@@ -1857,12 +1915,12 @@
       }
       
       if (successCount > 0) {
-        alert(`Successfully added tag "${tagName}" to ${successCount} design(s).`);
+        showNotification(`Added tag "${tagName}" to ${successCount} design(s).`);
         updateDesignCards();
       }
       
       if (errorCount > 0) {
-        alert(`Failed to add tag to ${errorCount} design(s).`);
+        showNotification(`Failed to add tag to ${errorCount} design(s).`, 'error');
       }
     }
     
@@ -1890,6 +1948,55 @@
       } catch (error) {
         console.error(`Error removing tag from design ${designId}:`, error);
         return false;
+      }
+    }
+    
+    async function removeAllTagsFromSelected() {
+      if (selectedDesigns.size === 0) {
+        showNotification('Please select at least one design first.', 'warning');
+        return;
+      }
+      
+      const selectedDesignsArray = Array.from(selectedDesigns);
+      let successCount = 0;
+      let errorCount = 0;
+      
+      for (const designId of selectedDesignsArray) {
+        try {
+          const design = designs.find(d => d.id === designId);
+          if (design && design.tags && design.tags.length > 0) {
+            // Remove each tag individually
+            for (const tag of design.tags) {
+              const { error } = await supabase
+                .rpc('remove_design_tag', {
+                  design_id: designId,
+                  tag: tag
+                });
+              
+              if (error) {
+                console.error(`Error removing tag ${tag} from design ${designId}:`, error);
+                errorCount++;
+              } else {
+                successCount++;
+              }
+            }
+            
+            // Clear tags from local array
+            design.tags = [];
+          }
+        } catch (error) {
+          console.error(`Error removing tags from design ${designId}:`, error);
+          errorCount++;
+        }
+      }
+      
+      if (successCount > 0) {
+        showNotification(`Removed all tags from ${selectedDesignsArray.length} design(s).`);
+        updateDesignCards();
+      }
+      
+      if (errorCount > 0) {
+        showNotification(`Failed to remove some tags (${errorCount} errors).`, 'error');
       }
     }
     
@@ -1924,7 +2031,7 @@
     
     function openBulkTagModal() {
       if (selectedDesigns.size === 0) {
-        alert('Please select at least one design first.');
+        showNotification('Please select at least one design first.', 'warning');
         return;
       }
       
@@ -1934,6 +2041,70 @@
       document.getElementById('bulkTagSuggestions').innerHTML = '';
       document.getElementById('bulkSelectedTags').innerHTML = '';
       bulkSelectedTags.clear();
+    }
+    
+    async function bulkDeleteSelected() {
+      if (selectedDesigns.size === 0) {
+        showNotification('Please select at least one design first.', 'warning');
+        return;
+      }
+      
+      const selectedDesignsArray = Array.from(selectedDesigns);
+      const confirmMessage = `Are you sure you want to delete ${selectedDesignsArray.length} design(s)? This action cannot be undone.`;
+      
+      if (!confirm(confirmMessage)) {
+        return;
+      }
+      
+      let successCount = 0;
+      let errorCount = 0;
+      
+      for (const designId of selectedDesignsArray) {
+        try {
+          const design = designs.find(d => d.id === designId);
+          if (!design) continue;
+          
+          // Delete from storage first
+          const { error: storageError } = await supabase.storage
+            .from('designs')
+            .remove([design.filename]);
+          
+          if (storageError) {
+            console.error(`Error deleting file from storage:`, storageError);
+          }
+          
+          // Delete from database
+          const { error: dbError } = await supabase
+            .from('designs')
+            .delete()
+            .eq('id', designId);
+          
+          if (dbError) {
+            console.error(`Error deleting design from database:`, dbError);
+            errorCount++;
+          } else {
+            successCount++;
+          }
+        } catch (error) {
+          console.error(`Error deleting design ${designId}:`, error);
+          errorCount++;
+        }
+      }
+      
+      if (successCount > 0) {
+        showNotification(`Successfully deleted ${successCount} design(s).`);
+        
+        // Remove from local array
+        designs = designs.filter(d => !selectedDesigns.has(d.id));
+        selectedDesigns.clear();
+        updateSelectionInfo();
+        updateStats();
+        filterDesigns();
+      }
+      
+      if (errorCount > 0) {
+        showNotification(`Failed to delete ${errorCount} design(s).`, 'error');
+      }
     }
     
     function closeBulkTagModal() {
@@ -2002,7 +2173,7 @@
     
     async function applyBulkTags() {
       if (bulkSelectedTags.size === 0) {
-        alert('Please select at least one tag.');
+        showNotification('Please select at least one tag.', 'warning');
         return;
       }
       
@@ -2042,14 +2213,14 @@
       }
       
       if (successCount > 0) {
-        alert(`Successfully added ${tagsArray.length} tag(s) to ${selectedDesignsArray.length} design(s).`);
+        showNotification(`Added ${tagsArray.length} tag(s) to ${selectedDesignsArray.length} design(s).`);
         updateDesignCards();
         closeBulkTagModal();
         clearSelection();
       }
       
       if (errorCount > 0) {
-        alert(`Failed to add ${errorCount} tag(s).`);
+        showNotification(`Failed to add ${errorCount} tag(s).`, 'error');
       }
     }
     
