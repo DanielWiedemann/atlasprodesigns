@@ -539,6 +539,7 @@
       
       updateFilterTags();
       updateFilterCount();
+      // Don't close the panel when selecting tags
     }
     
     function applyFilter() {
@@ -555,7 +556,7 @@
       
       renderGallery();
       updateFilterCount();
-      closeFilterPanel();
+      closeFilterPanel(); // Only close when Apply Filter is clicked
     }
     
     function clearFilter() {
