@@ -534,6 +534,33 @@
       margin-top: 5px;
     }
     @media (max-width: 768px) {
+  /* Adjust the container for the input and button */
+  #tagInput {
+    flex: 1; /* Take up remaining space */
+    padding: 6px 8px; /* Smaller padding for mobile */
+    font-size: 0.85rem; /* Adjust font size */
+  }
+
+  #toggleTagManagement {
+    width: 24px; /* Fixed width to fit the screen */
+    height: 24px; /* Fixed height to match width */
+    padding: 0; /* Remove padding */
+    font-size: 0.75rem; /* Smaller font size */
+    display: flex; /* Center content */
+    align-items: center;
+    justify-content: center;
+    margin-left: 4px; /* Small spacing between input and button */
+  }
+
+  /* Ensure the container for the input and button aligns properly */
+  #tagManagementContent > div {
+    display: flex;
+    align-items: center;
+    gap: 4px; /* Space between the input and button */
+  }
+}
+    @media (max-width: 768px) {
+      
       .admin-layout {
         flex-direction: column;
       }
@@ -542,7 +569,7 @@
         margin-left: 0;
         order: -1;
         margin-bottom: 0;
-        padding: 8px 12px;
+        padding: 12px 12px;
         max-height: none;
         overflow-y: visible;
         position: sticky;
@@ -557,7 +584,6 @@
         display: none;
       }
       .tag-input {
-        width: 70% !important;
         margin-bottom: 4px;
         padding: 4px 6px;
         font-size: 12px;
@@ -810,7 +836,7 @@
   
   <!-- Jump to Top Button -->
   <button id="jumpToTop" style="position:fixed;bottom:20px;right:20px;z-index:1000;background:rgba(52,152,219,0.8);color:white;border:none;border-radius:50%;width:40px;height:40px;cursor:pointer;font-size:18px;display:none;transition:all 0.3s ease;box-shadow:0 2px 8px rgba(0,0,0,0.2);" onclick="scrollToTop()">
-    ↑
+    ⇧
   </button>
 
   <!-- Bulk Tag Modal -->
