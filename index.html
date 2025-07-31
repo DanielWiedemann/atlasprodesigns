@@ -191,9 +191,15 @@
     }
     
     /* Filter System Styles */
+    .filter-container {
+      max-width: 1200px;
+      margin: 0 auto 10px auto;
+      padding: 0 20px;
+      display: flex;
+      justify-content: flex-end;
+      box-sizing: border-box;
+    }
     .filter-icon {
-      position: static;
-      display: block;
       background: #3498db;
       color: white;
       padding: 8px 12px;
@@ -203,12 +209,8 @@
       font-weight: bold;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       transition: background 0.2s;
-      margin: 10px 0 10px auto;
       text-decoration: none;
       text-align: center;
-      width: fit-content;
-      max-width: 1200px;
-      margin-right: 20px;
     }
     .filter-icon:hover {
       background: #2980b9;
@@ -393,8 +395,10 @@
   <h1>Designs Gallery</h1>
   
   <!-- Filter Icon -->
-  <div class="filter-icon" id="filterIcon">
-    <i class="fas fa-filter"></i> Filter
+  <div class="filter-container">
+    <div class="filter-icon" id="filterIcon">
+      <i class="fas fa-filter"></i> Filter
+    </div>
   </div>
   
   <!-- Filter Panel -->
