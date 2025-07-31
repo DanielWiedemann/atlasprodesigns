@@ -24,7 +24,7 @@
     }
     .atlas-logo img {
       width: 380px;
-      max-width: 90%;
+      max-width: 100%;
       height: auto;
       display: block;
     }
@@ -110,6 +110,7 @@
       border-radius: 16px;
       box-shadow: 0 4px 24px rgba(0,0,0,0.07);
       padding: 20px;
+      margin-right: 20px;
       height: fit-content;
       position: sticky;
       top: 20px;
@@ -533,32 +534,7 @@
       font-size: 0.8rem;
       margin-top: 5px;
     }
-    @media (max-width: 768px) {
-  /* Adjust the container for the input and button */
-  #tagInput {
-    flex: 1; /* Take up remaining space */
-    padding: 6px 8px; /* Smaller padding for mobile */
-    font-size: 0.85rem; /* Adjust font size */
-  }
-
-  #toggleTagManagement {
-    width: 24px; /* Fixed width to fit the screen */
-    height: 24px; /* Fixed height to match width */
-    padding: 0; /* Remove padding */
-    font-size: 0.75rem; /* Smaller font size */
-    display: flex; /* Center content */
-    align-items: center;
-    justify-content: center;
-    margin-left: 4px; /* Small spacing between input and button */
-  }
-
-  /* Ensure the container for the input and button aligns properly */
-  #tagManagementContent > div {
-    display: flex;
-    align-items: center;
-    gap: 4px; /* Space between the input and button */
-  }
-}
+    
     @media (max-width: 768px) {
       
       .admin-layout {
@@ -708,7 +684,7 @@
   </a>
   
   <div style="text-align: center; width: 100%; padding: 20px 20px; box-sizing: border-box;">
-    <div class="atlas-logo" style="margin: 15px auto 0 auto; display: inline-block;"><a href="index.html"><img src="logo.png" alt="Atlas Pro Logo" /></a></div>
+    <div class="atlas-logo"><a href="index.html"><img src="logo.png" alt="Atlas Pro Logo" /></a></div>
   </div>
   <h1 style="text-align: center; margin-top: 15px; color: #000000; text-transform: uppercase; font-size: 1.6rem;">Admin Panel</h1>
   
@@ -794,8 +770,8 @@
         <h3 style="margin-top: 10px; margin-bottom: 15px;">Tag Management</h3>
         
         <!-- Tag Input and Add -->
-        <div style="margin-bottom: 15px;">
-          <div style="display: flex; align-items: center; gap: 4px; margin-bottom: 10px;">
+        <div style="margin-bottom: 15px; width: 90%;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
             <input type="text" id="tagInput" placeholder="Enter tag name..." style="flex: 1; padding: 8px 12px; border: 2px solid #ddd; border-radius: 6px; font-size: 14px;">
             <button id="toggleTagManagement" style="background: #95a5a6; color: white; border: none; padding: 6px; border-radius: 6px; cursor: pointer; font-size: 14px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center;">▲</button>
           </div>
