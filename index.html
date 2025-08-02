@@ -327,6 +327,66 @@
       text-align: center;
     }
     
+    /* Link icon styles */
+    .link-icon {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      background: rgba(52, 152, 219, 0.9);
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      cursor: pointer;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      z-index: 15;
+      opacity: 0;
+      transform: scale(0.8);
+    }
+    
+    .design-card:hover .link-icon {
+      opacity: 1;
+      transform: scale(1);
+    }
+    
+    .link-icon:hover {
+      background: rgba(41, 128, 185, 1);
+      transform: scale(1.1);
+    }
+    
+    .link-icon:active {
+      transform: scale(0.95);
+    }
+    
+    /* Toast notification styles */
+    .toast {
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(46, 204, 113, 0.95);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 2000;
+      opacity: 0;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+    
+    .toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(10px);
+    }
+    
     /* Mobile responsive styles */
     @media (max-width: 768px) {
       .gallery-container {
@@ -385,6 +445,15 @@
       }
       .atlas-logo img {
         width: 300px;
+      }
+      
+      /* Mobile adjustments for link icon */
+      .link-icon {
+        opacity: 1;
+        transform: scale(1);
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
       }
     }
   </style>
@@ -744,6 +813,7 @@
       const card = document.createElement('div');
       card.className = 'design-card';
       card.dataset.designId = design.id;
+      card.id = `design-${design.id}`;
       
       const image = document.createElement('img');
       image.className = 'design-image';
@@ -760,11 +830,22 @@
       
       const rating = createStarRating(design.id, design.average_rating || 0);
       
+      // Create link icon
+      const linkIcon = document.createElement('button');
+      linkIcon.className = 'link-icon';
+      linkIcon.innerHTML = '<i class="fas fa-link"></i>';
+      linkIcon.title = 'Copy link to this design';
+      linkIcon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        copyDesignLink(design.id);
+      });
+      
       info.appendChild(name);
       info.appendChild(rating);
       
       card.appendChild(image);
       card.appendChild(info);
+      card.appendChild(linkIcon);
       
       // Add image protection overlay
       const overlay = document.createElement('div');
@@ -899,6 +980,56 @@
           jumpToTopBtn.style.display = 'none';
         }
       });
+    }
+
+    // Function to copy design link to clipboard
+    async function copyDesignLink(designId) {
+      const url = `${window.location.origin}${window.location.pathname}#design-${designId}`;
+      
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast('Link copied to clipboard!');
+      } catch (err) {
+        // Fallback for older browsers
+        const textArea = document.createElement('textarea');
+        textArea.value = url;
+        document.body.appendChild(textArea);
+        textArea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textArea);
+        showToast('Link copied to clipboard!');
+      }
+    }
+
+    // Function to show toast notification
+    function showToast(message) {
+      // Remove any existing toast
+      const existingToast = document.querySelector('.toast');
+      if (existingToast) {
+        existingToast.remove();
+      }
+      
+      // Create new toast
+      const toast = document.createElement('div');
+      toast.className = 'toast';
+      toast.textContent = message;
+      
+      document.body.appendChild(toast);
+      
+      // Show toast with animation
+      setTimeout(() => {
+        toast.classList.add('show');
+      }, 100);
+      
+      // Hide and remove toast after 3 seconds
+      setTimeout(() => {
+        toast.classList.remove('show');
+        setTimeout(() => {
+          if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+          }
+        }, 300);
+      }, 3000);
     }
 
     init();
