@@ -940,8 +940,9 @@
     
     // Helper function to scroll to and highlight a design
     function scrollToDesign(designElement) {
-      // Add a small delay to ensure the element is fully rendered
-      setTimeout(() => {
+      const image = designElement.querySelector('.design-image');
+      
+      function performScroll() {
         designElement.scrollIntoView({
           behavior: 'smooth',
           block: 'center'
@@ -952,7 +953,18 @@
         setTimeout(() => {
           designElement.style.transform = 'scale(1)';
         }, 1000);
-      }, 500);
+      }
+      
+      if (image && !image.complete) {
+        // Image is still loading, wait for it to load
+        image.addEventListener('load', performScroll, { once: true });
+        
+        // Fallback timeout in case image fails to load
+        setTimeout(performScroll, 3000);
+      } else {
+        // Image is already loaded or doesn't exist, scroll immediately with small delay
+        setTimeout(performScroll, 100);
+      }
     }
 
     // Initialize
@@ -975,7 +987,10 @@
         setupImageProtection();
         
         // Handle anchor links after everything is loaded
-        handleAnchorLink();
+        // Add a small delay to ensure all images start loading
+        setTimeout(() => {
+          handleAnchorLink();
+        }, 200);
       }
     }
 
