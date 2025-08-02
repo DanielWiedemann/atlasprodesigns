@@ -904,69 +904,6 @@
       });
     }
 
-    // Function to handle anchor links after designs are loaded
-    function handleAnchorLink() {
-      const hash = window.location.hash;
-      if (hash && hash.startsWith('#design-')) {
-        const designId = hash.replace('#design-', '');
-        let designElement = document.getElementById(`design-${designId}`);
-        
-        // If the design element doesn't exist, it might be filtered out
-        if (!designElement) {
-          // Check if the design exists in allDesigns
-          const targetDesign = allDesigns.find(design => design.id === designId);
-          if (targetDesign) {
-            // Clear filters to show the design
-            selectedFilterTags.clear();
-            filteredDesigns = [...allDesigns];
-            updateFilterTags();
-            updateFilterCount();
-            renderGallery().then(() => {
-              // Try again after re-rendering
-              designElement = document.getElementById(`design-${designId}`);
-              if (designElement) {
-                scrollToDesign(designElement);
-              }
-            });
-            return;
-          }
-        }
-        
-        if (designElement) {
-          scrollToDesign(designElement);
-        }
-      }
-    }
-    
-    // Helper function to scroll to and highlight a design
-    function scrollToDesign(designElement) {
-      const image = designElement.querySelector('.design-image');
-      
-      function performScroll() {
-        designElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'center'
-        });
-        // Add a subtle highlight effect
-        designElement.style.transform = 'scale(1.02)';
-        designElement.style.transition = 'transform 0.3s ease';
-        setTimeout(() => {
-          designElement.style.transform = 'scale(1)';
-        }, 1000);
-      }
-      
-      if (image && !image.complete) {
-        // Image is still loading, wait for it to load
-        image.addEventListener('load', performScroll, { once: true });
-        
-        // Fallback timeout in case image fails to load
-        setTimeout(performScroll, 3000);
-      } else {
-        // Image is already loaded or doesn't exist, scroll immediately with small delay
-        setTimeout(performScroll, 100);
-      }
-    }
-
     // Initialize
     async function init() {
       await loadSupabaseConfig();
@@ -985,12 +922,6 @@
         // Render gallery
         await renderGallery();
         setupImageProtection();
-        
-        // Handle anchor links after everything is loaded
-        // Add a small delay to ensure all images start loading
-        setTimeout(() => {
-          handleAnchorLink();
-        }, 200);
       }
     }
 
@@ -1100,9 +1031,6 @@
         }, 300);
       }, 3000);
     }
-
-    // Listen for hash changes (back/forward navigation)
-    window.addEventListener('hashchange', handleAnchorLink);
 
     init();
     setupScrollToTop();
